@@ -1,0 +1,336 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=theme-color content="#494f5c"><meta name=msapplication-TileColor content="#494f5c"><meta itemprop=name content="Go学习笔记(七) | 理解OAuth 2.0并实现一个客户端"><meta itemprop=description content="OAuth 2.0是一个关于授权的开放网络标准，主要致力于简化客户端人员开发，同时为Web应用程序、桌面应用程序、移动电话和物联网设备提供特定的授权规范。他的官网在这里。在RFC6749中有明确协议规范。
+简单来说，我们平时使用的很多第三方登录并获取头像等信息就是用的OAuth 2.0。如我们用QQ登录一些论坛，用google账号登陆facebook，用github账号登陆gitlab等。如下图展示的就是利用QQ登录网易云音乐Web版，其中用到的就是OAuth 2.0。"><meta itemprop=datePublished content="2019-02-07T14:41:58+00:00"><meta itemprop=dateModified content="2019-02-07T14:41:58+00:00"><meta itemprop=wordCount content="5740"><meta itemprop=image content="https://razeencheng.com/android-chrome-192x192.png"><meta itemprop=keywords content="oauth,golang,"><meta property="og:title" content="Go学习笔记(七) | 理解OAuth 2.0并实现一个客户端"><meta property="og:description" content="OAuth 2.0是一个关于授权的开放网络标准，主要致力于简化客户端人员开发，同时为Web应用程序、桌面应用程序、移动电话和物联网设备提供特定的授权规范。他的官网在这里。在RFC6749中有明确协议规范。
+简单来说，我们平时使用的很多第三方登录并获取头像等信息就是用的OAuth 2.0。如我们用QQ登录一些论坛，用google账号登陆facebook，用github账号登陆gitlab等。如下图展示的就是利用QQ登录网易云音乐Web版，其中用到的就是OAuth 2.0。"><meta property="og:type" content="article"><meta property="og:url" content="https://razeencheng.com/posts/oauth2-protocol-details/"><meta property="og:image" content="https://razeencheng.com/android-chrome-192x192.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2019-02-07T14:41:58+00:00"><meta property="article:modified_time" content="2019-02-07T14:41:58+00:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://razeencheng.com/android-chrome-192x192.png"><meta name=twitter:title content="Go学习笔记(七) | 理解OAuth 2.0并实现一个客户端"><meta name=twitter:description content="OAuth 2.0是一个关于授权的开放网络标准，主要致力于简化客户端人员开发，同时为Web应用程序、桌面应用程序、移动电话和物联网设备提供特定的授权规范。他的官网在这里。在RFC6749中有明确协议规范。
+简单来说，我们平时使用的很多第三方登录并获取头像等信息就是用的OAuth 2.0。如我们用QQ登录一些论坛，用google账号登陆facebook，用github账号登陆gitlab等。如下图展示的就是利用QQ登录网易云音乐Web版，其中用到的就是OAuth 2.0。"><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon href=/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=mask-icon href=/safari-pinned-tab.svg><link rel=manifest crossorigin=use-credentials href=/site.webmanifest><link rel="shortcut icon" href=/favicon.ico><title>Go学习笔记(七) | 理解OAuth 2.0并实现一个客户端</title><link rel=stylesheet href=https://razeencheng.com/css/style.min.a88782436067f84711b02510e9f09bd68bd49c25cd2e03624cd7320fa893b6ea.css integrity="sha256-qIeCQ2Bn+EcRsCUQ6fCb1ovUnCXNLgNiTNcyD6iTtuo=" crossorigin=anonymous></head><body id=page><header id=site-header><div class="hdr-wrapper section-inner"><div class=hdr-left><div class=site-branding><a href=https://razeencheng.com>Razeen`s Blog</a></div><nav class="site-nav hide-in-mobile"><a href=https://razeencheng.com/posts/>文章</a>
+<a href=https://razeencheng.com/tags/>标签</a>
+<a href=https://razeencheng.com/categories/>分类</a>
+<a href=https://razeencheng.com/about/>关于</a></nav></div><div class="hdr-right hdr-icons"><span class="hdr-social hide-in-mobile"><a href=https://twitter.com/razeencheng target=_blank rel="noopener me" title=Twitter><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9.0 01-3.14 1.53 4.48 4.48.0 00-7.86 3v1A10.66 10.66.0 013 4s-4 9 5 13a11.64 11.64.0 01-7 2c9 5 20 0 20-11.5a4.5 4.5.0 00-.08-.83A7.72 7.72.0 0023 3z"/></svg></a><a href=https://github.com/razeencheng target=_blank rel="noopener me" title=Github><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg></a></span><button id=menu-btn class=hdr-btn title=菜单><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><div id=mobile-menu class="animated fast"><ul><li><a href=https://razeencheng.com/posts/>文章</a></li><li><a href=https://razeencheng.com/tags/>标签</a></li><li><a href=https://razeencheng.com/categories/>分类</a></li><li><a href=https://razeencheng.com/about/>关于</a></li></ul></div><main class="site-main section-inner"><article class=thin><header class=post-header><div class=post-meta><span>Feb 7, 2019</span></div><h1>Go学习笔记(七) | 理解OAuth 2.0并实现一个客户端</h1></header><div class=content><p>OAuth 2.0是一个关于授权的开放网络标准，主要致力于简化客户端人员开发，同时为Web应用程序、桌面应用程序、移动电话和物联网设备提供特定的授权规范。他的官网在<a href=https://oauth.net/2/>这里</a>。在<a href=https://tools.ietf.org/html/rfc6749>RFC6749</a>中有明确协议规范。</p><p>简单来说，我们平时使用的很多第三方登录并获取头像等信息就是用的OAuth 2.0。如我们用QQ登录一些论坛，用google账号登陆facebook，用github账号登陆gitlab等。如下图展示的就是利用QQ登录网易云音乐Web版，其中用到的就是OAuth 2.0。</p><p><img src=https://s.razeen.cn/images/2019/oauth2-01.png alt></p><h3 id=理解oauth-20>理解OAuth 2.0<a href=#理解oauth-20 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>在开始编程前，我们先要掌握OAuth 2.0认证的流程是什么样的，下面我们一起走进OAuth 2.0。</p><p><em><strong>下面的情景都以我用QQ登录网易云Web版为例子。</strong></em></p><h4 id=相关名词>相关名词<a href=#相关名词 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h4><p>在理解OAuth 2.0前，我们先需要理解下面这几个名词。</p><ul><li><p><code>resource owner</code>： 资源所有者。也就是例子中的我(用户)。</p></li><li><p><code>resource server</code>： 资源服务器，即服务提供商存放用户资源的服务器。例子中就是QQ的资源服务器，存放了我的QQ昵称，QQ头像，性别等等信息。</p></li><li><p><code>client</code>： 客户端，需要得到资源的应用程序。例子中的网易云音乐Web版。</p></li><li><p><code>authorization server</code>：认证服务器，即服务提供商专门用来处理认证的服务器。例子中QQ提供的认证服务器(跳出来让我们扫码登录QQ的这个服务)。</p></li><li><p><code>user-agent</code>：用户代理。我们用来访问客户端的程序，如这里就是浏览器。</p></li></ul><p>总体说来，这种登录流程大概就是这样：</p><p>我<code>(resource owner)</code>需要用QQ<code>(resource server)</code> 在浏览器<code>(user-agent)</code>登录网易云音乐<code>(client)</code>，我们先登录QQ<code>(authorization server)</code>，授权给网易云。然后网易云才能拿着这个授权信息去QQ资源服务器<code>(resource server)</code>获取到我的头像/昵称/性别等信息。</p><p>具体流程我们继续往下看。</p><h4 id=协议流程>协议流程<a href=#协议流程 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h4><p>下图来自<a href=https://tools.ietf.org/html/rfc6749>RFC6749</a>。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-txt data-lang=txt><span class=line><span class=cl>     +--------+                               +---------------+
+</span></span><span class=line><span class=cl>     |        |--(A)- Authorization Request -&gt;|   Resource    |
+</span></span><span class=line><span class=cl>     |        |                               |     Owner     |
+</span></span><span class=line><span class=cl>     |        |&lt;-(B)-- Authorization Grant ---|               |
+</span></span><span class=line><span class=cl>     |        |                               +---------------+
+</span></span><span class=line><span class=cl>     |        |
+</span></span><span class=line><span class=cl>     |        |                               +---------------+
+</span></span><span class=line><span class=cl>     |        |--(C)-- Authorization Grant --&gt;| Authorization |
+</span></span><span class=line><span class=cl>     | Client |                               |     Server    |
+</span></span><span class=line><span class=cl>     |        |&lt;-(D)----- Access Token -------|               |
+</span></span><span class=line><span class=cl>     |        |                               +---------------+
+</span></span><span class=line><span class=cl>     |        |
+</span></span><span class=line><span class=cl>     |        |                               +---------------+
+</span></span><span class=line><span class=cl>     |        |--(E)----- Access Token ------&gt;|    Resource   |
+</span></span><span class=line><span class=cl>     |        |                               |     Server    |
+</span></span><span class=line><span class=cl>     |        |&lt;-(F)--- Protected Resource ---|               |
+</span></span><span class=line><span class=cl>     +--------+                               +---------------+
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>                     Figure 1: Abstract Protocol Flow
+</span></span></code></pre></div><ul><li><p>(A) 客户端请求<code>resource owner</code>授权；</p><p>这种授权可以是直接向<code>resource owner</code>请求，也可以通过<code>authorization server</code>间接请求。例子中，就是跳转到QQ的<code>authorization server</code>，让用户登录QQ。</p></li><li><p>(B) 用户同意给予授权；</p><p>例子中，用户点击同意，重定向回网易云音乐，这是一种授权模式。在RFC中规定了4中授权模式，具体采用哪一种取决于<code>authorization server</code>，下一小节具体介绍。</p></li><li><p>(C) 客户端拿着上一步的授权，向<code>authorization server</code>申请令牌(access_token)；</p></li><li><p>(D) <code>authorization server</code>确认授权无误后，发放令牌(access_token)；</p></li><li><p>(E) 客户端拿着令牌（access_token）到<code>resource server</code>去获取资源;</p><p>例子中，获取QQ头像，昵称等。</p></li><li><p>(F) <code>resource server</code>确认无误，同意向客户端下发受保护的资源。</p></li></ul><p>下面详细说到其中四种授权模式。</p><h4 id=授权模式>授权模式<a href=#授权模式 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h4><p>客户端要得到令牌(access_token), 必须需要得到用户的授权，在OAuth 2.0 中定义了四种授权模式：</p><ul><li>授权码模式 (Authorization Code)</li><li>简化模式 (Implicit)</li><li>密码模式 (Resource Owner Password Credentials)</li><li>客户端模式 (Client Credentials)</li></ul><p>每种模式的使用场景与流程都有一定的差别。</p><h5 id=授权码模式-authorization-code>授权码模式 (Authorization Code)<a href=#授权码模式-authorization-code class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h5><p>授权码模式的授权流程是基于重定向。我们例子中的用QQ登录网易云就是这种模式，流程图如下(来自RFC6749)：</p><pre tabindex=0><code>    +----------+
+     | Resource |
+     |   Owner  |
+     |          |
+     +----------+
+          ^
+          |
+         (B)
+     +----|-----+          Client Identifier      +---------------+
+     |         -+----(A)-- &amp; Redirection URI ----&gt;|               |
+     |  User-   |                                 | Authorization |
+     |  Agent  -+----(B)-- User authenticates ---&gt;|     Server    |
+     |          |                                 |               |
+     |         -+----(C)-- Authorization Code ---&lt;|               |
+     +-|----|---+                                 +---------------+
+       |    |                                         ^      v
+      (A)  (C)                                        |      |
+       |    |                                         |      |
+       ^    v                                         |      |
+     +---------+                                      |      |
+     |         |&gt;---(D)-- Authorization Code ---------&#39;      |
+     |  Client |          &amp; Redirection URI                  |
+     |         |                                             |
+     |         |&lt;---(E)----- Access Token -------------------&#39;
+     +---------+       (w/ Optional Refresh Token)
+
+   Note: The lines illustrating steps (A), (B), and (C) are broken into
+   two parts as they pass through the user-agent.
+
+                     Figure 3: Authorization Code Flow
+</code></pre><ul><li>(A) 用户访问客户端，客户端将用户重定向到认证服务器；</li><li>(B) 用户选择是否授权；</li><li>(C) 如果用户同意授权，认证服务器重定向到客户端事先指定的地址，而且带上授权码(code)；</li><li>(D) 客户端收到授权码，带着前面的重定向地址，向认证服务器申请访问令牌；</li><li>(E) 认证服务器核对授权码与重定向地址，确认后向客户端发送访问令牌和更新令牌(可选)。</li></ul><p>1）在A中，客户端申请授权，重定向到认证服务器的URI中需要包含这些参数：</p><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>response_type</td><td>授权类型，此处的值为<code>code</code></td><td>必须</td></tr><tr><td>client_id</td><td>客户端ID，客户端到资源服务器注册的ID</td><td>必须</td></tr><tr><td>redirect_uri</td><td>重定向URI</td><td>可选</td></tr><tr><td>scope</td><td>申请的权限范围，多个逗号隔开</td><td>可选</td></tr><tr><td>state</td><td>客户端的当前状态，可以指定任意值，认证服务器会原封不动的返回这个值</td><td>推荐</td></tr></tbody></table><p>RFC6749中例子如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>   GET /authorize?response_type<span class=o>=</span>code<span class=p>&amp;</span><span class=nv>client_id</span><span class=o>=</span>s6BhdRkqt3<span class=p>&amp;</span><span class=nv>state</span><span class=o>=</span>xyz
+</span></span><span class=line><span class=cl>        <span class=p>&amp;</span><span class=nv>redirect_uri</span><span class=o>=</span>https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
+</span></span><span class=line><span class=cl>    Host: server.example.com
+</span></span></code></pre></div><p>我们在用QQ登录网易云音乐时实际的地址如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>https://graph.qq.com/oauth2.0/show?which<span class=o>=</span>Login
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>display</span><span class=o>=</span>pc
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>client_id</span><span class=o>=</span><span class=m>100495085</span>
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>response_type</span><span class=o>=</span>code
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>redirect_uri</span><span class=o>=</span>https://music.163.com/back/qq
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>forcelogin</span><span class=o>=</span><span class=nb>true</span>
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>state</span><span class=o>=</span>ichQQlAgNi
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>checkToken</span><span class=o>=</span>sretfyguihojpr
+</span></span></code></pre></div><p>我们看到参数基本一致，至于还多几个，有什么用这里就没有去深究了。</p><p>2）在C中，认证服务器返回的URI中，需要包含下面这些参数：</p><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>code</td><td>授权码。认证服务器返回的授权码，生命周期不超过10分钟，而且要求只能使用一次，和A中的<code>client_id</code>,<code>redirect_uri</code>绑定。</td><td>必须</td></tr><tr><td>state</td><td>如果A中请求包含这个参数，资源服务器原封不动的返回。</td><td>可选</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     HTTP/1.1 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl>     Location: https://client.example.com/cb?code<span class=o>=</span>SplxlOBeZQQYbYS6WxSbIA
+</span></span><span class=line><span class=cl>               <span class=p>&amp;</span><span class=nv>state</span><span class=o>=</span>xyz
+</span></span></code></pre></div><ol start=3><li>在D中客户端向认证服务器申请令牌(access_token)时，需要包含下面这些参数。</li></ol><table><thead><tr><th>参名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>grant_type</td><td>授权模式，此处为<code>authorization_code</code>。</td><td>必须</td></tr><tr><td>code</td><td>授权码，C中获取的<code>code</code>。</td><td>必须</td></tr><tr><td>redirect_uri</td><td>重定向URI，需要和A中一致。</td><td>必须</td></tr><tr><td>client_id</td><td>客户端ID，与A中一致。</td><td>必须</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     POST /token HTTP/1.1
+</span></span><span class=line><span class=cl>     Host: server.example.com
+</span></span><span class=line><span class=cl>     Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+</span></span><span class=line><span class=cl>     Content-Type: application/x-www-form-urlencoded
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=nv>grant_type</span><span class=o>=</span>authorization_code<span class=p>&amp;</span><span class=nv>code</span><span class=o>=</span>SplxlOBeZQQYbYS6WxSbIA
+</span></span><span class=line><span class=cl>     <span class=p>&amp;</span><span class=nv>redirect_uri</span><span class=o>=</span>https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+</span></span></code></pre></div><ol start=4><li>在E中，认证服务器返回的信息中，包含下面参数：</li></ol><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>access_token</td><td>访问令牌</td><td>必须</td></tr><tr><td>token_type</td><td>令牌类型，大小写不敏感。例如 Bearer，MAC。</td><td>必须</td></tr><tr><td>expires_in</td><td>过期时间(s)， 如果不设置也要通过其他方法设置一个。</td><td>推荐</td></tr><tr><td>refresh_token</td><td>更新令牌的token。当令牌过期的时候，可用通过该值刷新token。</td><td>可选</td></tr><tr><td>scope</td><td>权限范围，如果与客户端申请范围一致，可省略。</td><td>可选</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     HTTP/1.1 <span class=m>200</span> OK
+</span></span><span class=line><span class=cl>     Content-Type: application/json<span class=p>;</span><span class=nv>charset</span><span class=o>=</span>UTF-8
+</span></span><span class=line><span class=cl>     Cache-Control: no-store
+</span></span><span class=line><span class=cl>     Pragma: no-cache
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=o>{</span>
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;access_token&#34;</span>:<span class=s2>&#34;2YotnFZFEjr1zCsicMWpAA&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;token_type&#34;</span>:<span class=s2>&#34;example&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;expires_in&#34;</span>:3600,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;refresh_token&#34;</span>:<span class=s2>&#34;tGzv3JOkF0XG5Qx2TlKWIA&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;example_parameter&#34;</span>:<span class=s2>&#34;example_value&#34;</span>
+</span></span><span class=line><span class=cl>     <span class=o>}</span>
+</span></span></code></pre></div><ol start=5><li>如果我们的令牌过期了，需要更新，这里就需要使用<code>refresh_token</code>获取一个新令牌了。此时发起HTTP请求需要的参数有：</li></ol><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>grant_type</td><td>授权类型，此处是<code>refresh_token</code></td><td>必须</td></tr><tr><td>refresh_token</td><td>更新令牌的token。</td><td>必须</td></tr><tr><td>scope</td><td>权限范围。</td><td>可选</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     POST /token HTTP/1.1
+</span></span><span class=line><span class=cl>     Host: server.example.com
+</span></span><span class=line><span class=cl>     Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+</span></span><span class=line><span class=cl>     Content-Type: application/x-www-form-urlencoded
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=nv>grant_type</span><span class=o>=</span>refresh_token<span class=p>&amp;</span><span class=nv>refresh_token</span><span class=o>=</span>tGzv3JOkF0XG5Qx2TlKWIA
+</span></span></code></pre></div><p>这就是授权码模式，应该也是我们平常见的较多的模式了。</p><h5 id=简化模式-implicit>简化模式 (Implicit)<a href=#简化模式-implicit class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h5><p>简化模式，相当于授权码模式中，C步骤不再通过客户端，直接在浏览器<code>(user-agent)</code>中向认证服务器申请令牌，认证服务器不再返回授权码，所有步骤都在浏览器中完成，最后资源服务器将令牌放在<code>Fragment</code>中，浏览器从中将令牌提取，发送给客户端。</p><p>所以这个令牌对访问者时可见的，而且客户端不需要认证。详细流程如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-txt data-lang=txt><span class=line><span class=cl>     +----------+
+</span></span><span class=line><span class=cl>     | Resource |
+</span></span><span class=line><span class=cl>     |  Owner   |
+</span></span><span class=line><span class=cl>     |          |
+</span></span><span class=line><span class=cl>     +----------+
+</span></span><span class=line><span class=cl>          ^
+</span></span><span class=line><span class=cl>          |
+</span></span><span class=line><span class=cl>         (B)
+</span></span><span class=line><span class=cl>     +----|-----+          Client Identifier     +---------------+
+</span></span><span class=line><span class=cl>     |         -+----(A)-- &amp; Redirection URI ---&gt;|               |
+</span></span><span class=line><span class=cl>     |  User-   |                                | Authorization |
+</span></span><span class=line><span class=cl>     |  Agent  -|----(B)-- User authenticates --&gt;|     Server    |
+</span></span><span class=line><span class=cl>     |          |                                |               |
+</span></span><span class=line><span class=cl>     |          |&lt;---(C)--- Redirection URI ----&lt;|               |
+</span></span><span class=line><span class=cl>     |          |          with Access Token     +---------------+
+</span></span><span class=line><span class=cl>     |          |            in Fragment
+</span></span><span class=line><span class=cl>     |          |                                +---------------+
+</span></span><span class=line><span class=cl>     |          |----(D)--- Redirection URI ----&gt;|   Web-Hosted  |
+</span></span><span class=line><span class=cl>     |          |          without Fragment      |     Client    |
+</span></span><span class=line><span class=cl>     |          |                                |    Resource   |
+</span></span><span class=line><span class=cl>     |     (F)  |&lt;---(E)------- Script ---------&lt;|               |
+</span></span><span class=line><span class=cl>     |          |                                +---------------+
+</span></span><span class=line><span class=cl>     +-|--------+
+</span></span><span class=line><span class=cl>       |    |
+</span></span><span class=line><span class=cl>      (A)  (G) Access Token
+</span></span><span class=line><span class=cl>       |    |
+</span></span><span class=line><span class=cl>       ^    v
+</span></span><span class=line><span class=cl>     +---------+
+</span></span><span class=line><span class=cl>     |         |
+</span></span><span class=line><span class=cl>     |  Client |
+</span></span><span class=line><span class=cl>     |         |
+</span></span><span class=line><span class=cl>     +---------+
+</span></span></code></pre></div><ul><li>(A) 客户端将用户导向认证服务器， 携带客户端ID及重定向URI；</li><li>(B) 用户是否授权；</li><li>(C) 用户同意授权后，认证服务器重定向到A中指定的URI，并且在URI的<code>Fragment</code>中包含了访问令牌；</li><li>(D) 浏览器向资源服务器发出请求，该请求中不包含C中的<code>Fragment</code>值；</li><li>(E) 资源服务器返回一个网页，其中包含了可以提取C中<code>Fragment</code>里面访问令牌的脚本；</li><li>(F) 浏览器执行E中获得的脚本，提取令牌；</li><li>(G) 浏览器将令牌发送给客户端。</li></ul><p>1）在A步骤中，客户端发送请求，需要包含这些参数：</p><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>response_type</td><td>授权类型，此处值为<code>token</code>。</td><td>必须</td></tr><tr><td>client_id</td><td>客户端的ID。</td><td>必须</td></tr><tr><td>redirect_uri</td><td>重定向的URI。</td><td>可选</td></tr><tr><td>scope</td><td>权限范围。</td><td>可选</td></tr><tr><td>state</td><td>客户端的当前状态。指定后服务器会原封不动返回。</td><td>推荐</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>    GET /authorize?response_type<span class=o>=</span>token<span class=p>&amp;</span><span class=nv>client_id</span><span class=o>=</span>s6BhdRkqt3<span class=p>&amp;</span><span class=nv>state</span><span class=o>=</span>xyz
+</span></span><span class=line><span class=cl>        <span class=p>&amp;</span><span class=nv>redirect_uri</span><span class=o>=</span>https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
+</span></span><span class=line><span class=cl>    Host: server.example.com
+</span></span></code></pre></div><ol start=2><li>在C中，认证服务器返回的URI中，参数主要有：</li></ol><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>access_token</td><td>访问令牌。</td><td>必须</td></tr><tr><td>token_type</td><td>令牌类型。</td><td>必须</td></tr><tr><td>expires_in</td><td>过期时间。</td><td>推荐</td></tr><tr><td>scope</td><td>权限范围。</td><td>可选</td></tr><tr><td>state</td><td>客户端访问时如果指定了，原封不动返回。</td><td>可选</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     HTTP/1.1 <span class=m>302</span> Found
+</span></span><span class=line><span class=cl>     Location: http://example.com/cb#access_token<span class=o>=</span>2YotnFZFEjr1zCsicMWpAA
+</span></span><span class=line><span class=cl>               <span class=p>&amp;</span><span class=nv>state</span><span class=o>=</span>xyz<span class=p>&amp;</span><span class=nv>token_type</span><span class=o>=</span>example<span class=p>&amp;</span><span class=nv>expires_in</span><span class=o>=</span><span class=m>3600</span>
+</span></span></code></pre></div><p>我们可以看到C中返回的是一个重定向，而重定向的这个网址的<code>Fragment</code>部分包含了令牌。</p><p>D步骤中就是访问这个重定向指定的URI，而且不带<code>Fragment</code>部分，服务器会返回从<code>Fragment</code>中提取令牌的脚本，最后浏览器运行脚本获取到令牌发送给客户端。</p><h5 id=密码模式-resource-owner-password-credentials>密码模式 (Resource Owner Password Credentials)<a href=#密码模式-resource-owner-password-credentials class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h5><p>密码模式就是用户直接将用户名密码提供给客户端，客户端使用这些信息到认证服务器请求授权。具体流程如下：</p><pre tabindex=0><code>     +----------+
+     | Resource |
+     |  Owner   |
+     |          |
+     +----------+
+          v
+          |    Resource Owner
+         (A) Password Credentials
+          |
+          v
+     +---------+                                  +---------------+
+     |         |&gt;--(B)---- Resource Owner -------&gt;|               |
+     |         |         Password Credentials     | Authorization |
+     | Client  |                                  |     Server    |
+     |         |&lt;--(C)---- Access Token ---------&lt;|               |
+     |         |    (w/ Optional Refresh Token)   |               |
+     +---------+                                  +---------------+
+
+            Figure 5: Resource Owner Password Credentials Flow
+</code></pre><ul><li>(A) 资源所有者提供用户名密码给客户端；</li><li>(B) 客户端拿着用户名密码去认证服务器请求令牌；</li><li>(C) 认证服务器确认后，返回令牌；</li></ul><ol><li>在B中客户端发送的请求中，需要包含这些参数：</li></ol><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>grant_type</td><td>授权类型，此处值为<code>password</code>。</td><td>必须</td></tr><tr><td>username</td><td>用户名。</td><td>必须</td></tr><tr><td>password</td><td>用户的密码。</td><td>必须</td></tr><tr><td>scope</td><td>权限范围。</td><td>可选</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     POST /token HTTP/1.1
+</span></span><span class=line><span class=cl>     Host: server.example.com
+</span></span><span class=line><span class=cl>     Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+</span></span><span class=line><span class=cl>     Content-Type: application/x-www-form-urlencoded
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=nv>grant_type</span><span class=o>=</span>password<span class=p>&amp;</span><span class=nv>username</span><span class=o>=</span>johndoe<span class=p>&amp;</span><span class=nv>password</span><span class=o>=</span>A3ddj3w
+</span></span></code></pre></div><ol start=3><li>在C中，认证服务器返回访问令牌。如：</li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     HTTP/1.1 <span class=m>200</span> OK
+</span></span><span class=line><span class=cl>     Content-Type: application/json<span class=p>;</span><span class=nv>charset</span><span class=o>=</span>UTF-8
+</span></span><span class=line><span class=cl>     Cache-Control: no-store
+</span></span><span class=line><span class=cl>     Pragma: no-cache
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=o>{</span>
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;access_token&#34;</span>:<span class=s2>&#34;2YotnFZFEjr1zCsicMWpAA&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;token_type&#34;</span>:<span class=s2>&#34;example&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;expires_in&#34;</span>:3600,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;refresh_token&#34;</span>:<span class=s2>&#34;tGzv3JOkF0XG5Qx2TlKWIA&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;example_parameter&#34;</span>:<span class=s2>&#34;example_value&#34;</span>
+</span></span><span class=line><span class=cl>     <span class=o>}</span>
+</span></span></code></pre></div><h5 id=客户端模式-client-credentials>客户端模式 (Client Credentials)<a href=#客户端模式-client-credentials class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h5><p>客户端模式，其实就是客户端直接向认证服务器请求令牌。而用户直接在客户端注册即可，一般用于后端 API 的相关操作。其流程如下：</p><pre tabindex=0><code>
+     +---------+                                  +---------------+
+     |         |                                  |               |
+     |         |&gt;--(A)- Client Authentication ---&gt;| Authorization |
+     | Client  |                                  |     Server    |
+     |         |&lt;--(B)---- Access Token ---------&lt;|               |
+     |         |                                  |               |
+     +---------+                                  +---------------+
+
+                     Figure 6: Client Credentials Flow
+</code></pre><ul><li>(A) 客户端发起身份认证，请求访问令牌；</li><li>(B) 认证服务器确认无误，返回访问令牌。</li></ul><ol><li>在A中，客户端发起请求的参数有：</li></ol><table><thead><tr><th>参数名称</th><th>参数含义</th><th>是否必须</th></tr></thead><tbody><tr><td>grant_type</td><td>授权类型，此处值为<code>client_credentials</code>。</td><td>必须</td></tr><tr><td>scope</td><td>权限范围。</td><td>可选</td></tr></tbody></table><p>如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     POST /token HTTP/1.1
+</span></span><span class=line><span class=cl>     Host: server.example.com
+</span></span><span class=line><span class=cl>     Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+</span></span><span class=line><span class=cl>     Content-Type: application/x-www-form-urlencoded
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=nv>grant_type</span><span class=o>=</span>client_credentials
+</span></span></code></pre></div><p>2） 认证服务器认证后，发放访问令牌，如：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>     HTTP/1.1 <span class=m>200</span> OK
+</span></span><span class=line><span class=cl>     Content-Type: application/json<span class=p>;</span><span class=nv>charset</span><span class=o>=</span>UTF-8
+</span></span><span class=line><span class=cl>     Cache-Control: no-store
+</span></span><span class=line><span class=cl>     Pragma: no-cache
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>     <span class=o>{</span>
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;access_token&#34;</span>:<span class=s2>&#34;2YotnFZFEjr1zCsicMWpAA&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;token_type&#34;</span>:<span class=s2>&#34;example&#34;</span>,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;expires_in&#34;</span>:3600,
+</span></span><span class=line><span class=cl>       <span class=s2>&#34;example_parameter&#34;</span>:<span class=s2>&#34;example_value&#34;</span>
+</span></span><span class=line><span class=cl>     <span class=o>}</span>
+</span></span></code></pre></div><h3 id=实现oauth-20>实现OAuth 2.0<a href=#实现oauth-20 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>上面我们一起了解了OAuth 2.0的流程，现在我们开始实现OAuth 2.0。</p><p>首先，我需要一个使用场景，大概是这样的。</p><blockquote><p>我有一个需要登录的应用（web app)。
+用户可以选择使用github登录。
+登录后，显示一个简单的欢迎页面。</p></blockquote><p>有了这个场景后，我们开始设计（这里我们实现的是第一种授权码模式）。</p><h4 id=登录页面>登录页面<a href=#登录页面 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h4><p>在这里，我们充当的角色就是<code>client</code>,我们需要一个简单的页面，让用户选择使用<code>github</code>登录。</p><p>这是一个简单的html页面，<code>public/index.html</code>页面。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-html data-lang=html><span class=line><span class=cl><span class=cp>&lt;!DOCTYPE html&gt;</span>
+</span></span><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>html</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>body</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>  <span class=p>&lt;</span><span class=nt>a</span> <span class=na>href</span><span class=o>=</span><span class=s>&#34;https://github.com/login/oauth/authorize?client_id=89ac6f58f15f658d8dd5&amp;redirect_uri=http://localhost:8080/oauth/redirect&#34;</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>    Login with github
+</span></span><span class=line><span class=cl>  <span class=p>&lt;/</span><span class=nt>a</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl><span class=p>&lt;/</span><span class=nt>body</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>&lt;/</span><span class=nt>html</span><span class=p>&gt;</span>
+</span></span></code></pre></div><p>也就是当用户点击<code>Login with github</code>会访问</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>https://github.com/login/oauth/authorize?
+</span></span><span class=line><span class=cl>		<span class=nv>client_id</span><span class=o>=</span>89ac6f58f15f658d8dd5
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>redirect_uri</span><span class=o>=</span>http://localhost:8080/oauth/redirect
+</span></span></code></pre></div><p>其中：</p><ul><li><p><code>https://github.com/login/oauth/authorize</code> 是GitHub的OAuth网关地址。</p></li><li><p><code>client_id=89ac6f58f15f658d8dd5</code> 这个是我申请的客户端ID，</p><p>需要到<a href=https://github.com/settings/applications/new>https://github.com/settings/applications/new</a>注册。</p><p>注册过程很简单，但要注意，最后一栏<code>Authorization callback URL</code>是和下面<code>redirect_uri</code>一致。</p><p>如：</p><p><img src=https://s.razeen.cn/images/2019/Jietu20190208-230400.png alt></p><p>成功后你会获的<code>Client ID</code>与<code>Client Secret</code>, 前者就是这里的<code>client_id</code>，两者在后面的编码中需要用到。</p></li><li><p><code>redirect_uri=http://localhost:8080/oauth/redirect</code> 当用户确认，获取权限后重定向到的该地址。</p></li></ul><p>然后我们写个<code>mian.go</code>, 启动一个简单的服务。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fs</span> <span class=o>:=</span> <span class=nx>http</span><span class=p>.</span><span class=nf>FileServer</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nf>Dir</span><span class=p>(</span><span class=s>&#34;public&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=nx>http</span><span class=p>.</span><span class=nf>Handle</span><span class=p>(</span><span class=s>&#34;/&#34;</span><span class=p>,</span> <span class=nx>fs</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>http</span><span class=p>.</span><span class=nf>ListenAndServe</span><span class=p>(</span><span class=s>&#34;:8080&#34;</span><span class=p>,</span> <span class=kc>nil</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>写到这里，我们代码已经能跑起了，如果你点击<code>Login with github</code>我们会看到如下的授权页面。</p><p><img src=https://s.razeen.cn/images/2019/Jietu20190208-232606.png alt></p><p>当我们确定过后，会重定向到我们指定的地址，而且带上<code>code</code>,如：</p><pre tabindex=0><code>http://localhost:8080/oauth/redirect?code=260f17a7308f2c566725
+</code></pre><p>此时我们需要做的是，拿着该code去请求访问令牌(access_token)，对应授权码模式中的D步骤。</p><h4 id=重定向路由>重定向路由<a href=#重定向路由 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h4><p>现在我们有<code>code</code>了，我们需要去请求令牌。接下来我们就需要向<code>https://github.com/login/oauth/access_token</code>发送POST请求获取访问令牌(access_token)。</p><blockquote><p>关于更多GitHub重定向URI的信息你可以看<a href=https://developer.github.com/apps/building-oauth-apps/authorizing-oauth-apps/#2-users-are-redirected-back-to-your-site-by-github>这里</a>。</p></blockquote><p>现在，让我们将<code>/oauth/redirect</code>路由补全，在该步骤中请求访问令牌(access_token)。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kn>package</span> <span class=nx>main</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kn>import</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;encoding/json&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;fmt&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;log&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=s>&#34;net/http&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// 你在注册时得到的
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>const</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>	<span class=nx>clientID</span>     <span class=p>=</span> <span class=s>&#34;你的客户端ID&#34;</span>
+</span></span><span class=line><span class=cl>	<span class=nx>clientSecret</span> <span class=p>=</span> <span class=s>&#34;你的客户端密钥&#34;</span>
+</span></span><span class=line><span class=cl><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>var</span> <span class=nx>httpClient</span> <span class=p>=</span> <span class=nx>http</span><span class=p>.</span><span class=nx>Client</span><span class=p>{}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>type</span> <span class=nx>OAuthAccessResponse</span> <span class=kd>struct</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>AccessToken</span> <span class=kt>string</span> <span class=s>`json:&#34;access_token&#34;`</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>fs</span> <span class=o>:=</span> <span class=nx>http</span><span class=p>.</span><span class=nf>FileServer</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nf>Dir</span><span class=p>(</span><span class=s>&#34;public&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>	<span class=nx>http</span><span class=p>.</span><span class=nf>Handle</span><span class=p>(</span><span class=s>&#34;/&#34;</span><span class=p>,</span> <span class=nx>fs</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>http</span><span class=p>.</span><span class=nf>HandleFunc</span><span class=p>(</span><span class=s>&#34;/oauth/redirect&#34;</span><span class=p>,</span> <span class=nx>HandleOAuthRedirect</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>http</span><span class=p>.</span><span class=nf>ListenAndServe</span><span class=p>(</span><span class=s>&#34;:8080&#34;</span><span class=p>,</span> <span class=kc>nil</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1>// HandleOAuthRedirect doc
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>HandleOAuthRedirect</span><span class=p>(</span><span class=nx>w</span> <span class=nx>http</span><span class=p>.</span><span class=nx>ResponseWriter</span><span class=p>,</span> <span class=nx>r</span> <span class=o>*</span><span class=nx>http</span><span class=p>.</span><span class=nx>Request</span><span class=p>)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// 首先，我们从URI中解析出code参数
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>// 如: http://localhost:8080/oauth/redirect?code=260f17a7308f2c566725
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>err</span> <span class=o>:=</span> <span class=nx>r</span><span class=p>.</span><span class=nf>ParseForm</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;could not parse query: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusBadRequest</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>code</span> <span class=o>:=</span> <span class=nx>r</span><span class=p>.</span><span class=nf>FormValue</span><span class=p>(</span><span class=s>&#34;code&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 接下来，我们通过 clientID,clientSecret,code 获取授权密钥
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=c1>// 前者是我们在注册时得到的，后者是用户确认后，重定向到该路由，从中获取到的。
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>reqURL</span> <span class=o>:=</span> <span class=nx>fmt</span><span class=p>.</span><span class=nf>Sprintf</span><span class=p>(</span><span class=s>&#34;https://github.com/login/oauth/access_token?client_id=%s&amp;client_secret=%s&amp;code=%s&#34;</span><span class=p>,</span>
+</span></span><span class=line><span class=cl>		<span class=nx>clientID</span><span class=p>,</span> <span class=nx>clientSecret</span><span class=p>,</span> <span class=nx>code</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>req</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>http</span><span class=p>.</span><span class=nf>NewRequest</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>MethodPost</span><span class=p>,</span> <span class=nx>reqURL</span><span class=p>,</span> <span class=kc>nil</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;could not create HTTP request: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusBadRequest</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 设置我们期待返回的格式为json
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>req</span><span class=p>.</span><span class=nx>Header</span><span class=p>.</span><span class=nf>Set</span><span class=p>(</span><span class=s>&#34;accept&#34;</span><span class=p>,</span> <span class=s>&#34;application/json&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 发送http请求
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>res</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>httpClient</span><span class=p>.</span><span class=nf>Do</span><span class=p>(</span><span class=nx>req</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;could not send HTTP request: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusInternalServerError</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=k>defer</span> <span class=nx>res</span><span class=p>.</span><span class=nx>Body</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 解析
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=kd>var</span> <span class=nx>t</span> <span class=nx>OAuthAccessResponse</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>json</span><span class=p>.</span><span class=nf>NewDecoder</span><span class=p>(</span><span class=nx>res</span><span class=p>.</span><span class=nx>Body</span><span class=p>).</span><span class=nf>Decode</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>t</span><span class=p>);</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;could not parse JSON response: %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusBadRequest</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 最后获取到access_token后，我们重定向到欢迎页面，也就是表示用户登录成功，同属获取一些用户的基本展示信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>w</span><span class=p>.</span><span class=nf>Header</span><span class=p>().</span><span class=nf>Set</span><span class=p>(</span><span class=s>&#34;Location&#34;</span><span class=p>,</span> <span class=s>&#34;/welcome.html?access_token=&#34;</span><span class=o>+</span><span class=nx>t</span><span class=p>.</span><span class=nx>AccessToken</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>w</span><span class=p>.</span><span class=nf>WriteHeader</span><span class=p>(</span><span class=nx>http</span><span class=p>.</span><span class=nx>StatusFound</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h4 id=欢迎页面>欢迎页面<a href=#欢迎页面 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h4><p>上面我们拿到了访问令牌，同时，我们重定向到了欢迎页面。接下来，我们就在欢迎页中获取用户的GitHub名称作为展示。</p><p>添加<code>public/welcome.html</code>页面。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-html data-lang=html><span class=line><span class=cl><span class=cp>&lt;!DOCTYPE html&gt;</span>
+</span></span><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>html</span> <span class=na>lang</span><span class=o>=</span><span class=s>&#34;en&#34;</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>head</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=p>&lt;</span><span class=nt>meta</span> <span class=na>charset</span><span class=o>=</span><span class=s>&#34;UTF-8&#34;</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=p>&lt;</span><span class=nt>meta</span> <span class=na>name</span><span class=o>=</span><span class=s>&#34;viewport&#34;</span> <span class=na>content</span><span class=o>=</span><span class=s>&#34;width=device-width, initial-scale=1.0&#34;</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=p>&lt;</span><span class=nt>meta</span> <span class=na>http-equiv</span><span class=o>=</span><span class=s>&#34;X-UA-Compatible&#34;</span> <span class=na>content</span><span class=o>=</span><span class=s>&#34;ie=edge&#34;</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=p>&lt;</span><span class=nt>title</span><span class=p>&gt;</span>Hello<span class=p>&lt;/</span><span class=nt>title</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl><span class=p>&lt;/</span><span class=nt>head</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>body</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>&lt;/</span><span class=nt>body</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl><span class=p>&lt;</span><span class=nt>script</span><span class=p>&gt;</span>
+</span></span><span class=line><span class=cl>	<span class=c1>// 获取access_token
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=kr>const</span> <span class=nx>query</span> <span class=o>=</span> <span class=nb>window</span><span class=p>.</span><span class=nx>location</span><span class=p>.</span><span class=nx>search</span><span class=p>.</span><span class=nx>substring</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=kr>const</span> <span class=nx>token</span> <span class=o>=</span> <span class=nx>query</span><span class=p>.</span><span class=nx>split</span><span class=p>(</span><span class=s1>&#39;access_token=&#39;</span><span class=p>)[</span><span class=mi>1</span><span class=p>]</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 访问资源服务器地址，获取相关资源
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>fetch</span><span class=p>(</span><span class=s1>&#39;https://api.github.com/user&#39;</span><span class=p>,</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>headers</span><span class=o>:</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>                <span class=c1>// 将token放在Header中
+</span></span></span><span class=line><span class=cl><span class=c1></span>				<span class=nx>Authorization</span><span class=o>:</span> <span class=s1>&#39;token &#39;</span> <span class=o>+</span> <span class=nx>token</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>})</span>
+</span></span><span class=line><span class=cl>		<span class=c1>// 解析返回的JSON
+</span></span></span><span class=line><span class=cl><span class=c1></span>		<span class=p>.</span><span class=nx>then</span><span class=p>(</span><span class=nx>res</span> <span class=p>=&gt;</span> <span class=nx>res</span><span class=p>.</span><span class=nx>json</span><span class=p>())</span>
+</span></span><span class=line><span class=cl>		<span class=p>.</span><span class=nx>then</span><span class=p>(</span><span class=nx>res</span> <span class=p>=&gt;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>            <span class=c1>// 这里我们能得到很多信息
+</span></span></span><span class=line><span class=cl><span class=c1></span>			<span class=c1>// 具体看这里 https://developer.github.com/v3/users/#get-the-authenticated-user
+</span></span></span><span class=line><span class=cl><span class=c1></span>			<span class=c1>// 这里我们就只展示一下用户名了
+</span></span></span><span class=line><span class=cl><span class=c1></span>			<span class=kr>const</span> <span class=nx>nameNode</span> <span class=o>=</span> <span class=nb>document</span><span class=p>.</span><span class=nx>createTextNode</span><span class=p>(</span><span class=sb>`Welcome, </span><span class=si>${</span><span class=nx>res</span><span class=p>.</span><span class=nx>name</span><span class=si>}</span><span class=sb>`</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nb>document</span><span class=p>.</span><span class=nx>body</span><span class=p>.</span><span class=nx>appendChild</span><span class=p>(</span><span class=nx>nameNode</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=p>})</span>
+</span></span><span class=line><span class=cl><span class=p>&lt;/</span><span class=nt>script</span><span class=p>&gt;</span>
+</span></span></code></pre></div><p>到这里，我们再次运行程序，点击<code>Login with github</code>，同意后我们可以看到类似<code>Welcome, Razeen</code>的信息，此时我们已经完成整个OAuth 2.0的流程了。</p><blockquote><p>获得授权之后，我们能访问的API不仅仅有这些，更多的请看<a href=https://developer.github.com/v3/>这里</a>。</p></blockquote><p><em>源码在<a href=https://github.com/razeencheng/demo-go/tree/master/oauth2>这里</a>。</em></p><h3 id=关于安全>关于安全<a href=#关于安全 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><ol><li><p>这里我们将访问令牌直接放在了URI中，这么做其实是不安全的。更好的做法是我们创建一个会话session，将cooike发送给用户即可。</p></li><li><p>在前面OAuth 2.0的解释中，我们知道在请求权限的过程中，我们可以加上<code>state</code>字段，如</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>https://github.com/login/oauth/authorize？
+</span></span><span class=line><span class=cl>		<span class=nv>client_id</span><span class=o>=</span>89ac6f58f15f658d8dd5
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>redirect_uri</span><span class=o>=</span>http://localhost:8080/oauth/redirect
+</span></span><span class=line><span class=cl>		<span class=p>&amp;</span><span class=nv>state</span><span class=o>=</span>xxxxx
+</span></span></code></pre></div><p>而服务器会原封不动的返回该state。这样我们可以将该字段设置一些随机值，如果资源服务器返回的<code>state</code>值与我们设置的不同，我们认为该请求不是来自正确的资源服务器，应该拒绝。</p></li></ol><p><strong>参考</strong></p><ul><li><p><a href=https://tools.ietf.org/html/rfc6749>FRC6749</a></p></li><li><p><a href=https://www.sohamkamani.com/blog/golang/2018-06-24-oauth-with-golang/>Implementing OAuth 2.0 with Go(Golang)</a></p></li><li><p><a href=https://deepzz.com/post/what-is-oauth2-protocol.html>10 分钟理解什么是 OAuth 2.0 协议</a></p></li><li><p><a href=http://www.ruanyifeng.com/blog/2014/05/oauth_2_0.html>理解OAuth 2.0</a></p></li></ul></div><div class="related-posts thin"><h2>相关推荐</h2><ul><li><a href=/posts/go-swagger/>Go学习笔记(六) | 使用swaggo自动生成Restful API文档</a></li><li><a href=/posts/go-snippets/>Go学习笔记(五) | 使用代码片段(snippets)提高编码效率</a></li><li><a href=/posts/how-to-use-grpc-in-golang-03/>gRPC在Go中的使用（三）gRPC实现TLS加密通信与流模式</a></li><li><a href=/posts/how-to-use-grpc-in-golang-02/>gRPC在Go中的使用（二）gRPC实现简单通讯</a></li><li><a href=/posts/how-to-use-grpc-in-golang-01/>gRPC在Go中的使用（一）Protocol Buffers语法与相关使用</a></li></ul></div><hr class=post-end><footer class=post-info><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7" y2="7"/></svg><span class=tag><a href=https://razeencheng.com/tags/oauth>oauth</a></span><span class=tag><a href=https://razeencheng.com/tags/golang>golang</a></span></p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6A2 2 0 004 4v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>5740 字</p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>2019-02-07 14:41 +0000</p></footer></article><aside id=toc class=show-toc><div class=toc-title>目录</div><nav id=TableOfContents><ul><li><ul><li><a href=#理解oauth-20>理解OAuth 2.0</a></li><li><a href=#实现oauth-20>实现OAuth 2.0</a></li><li><a href=#关于安全>关于安全</a></li></ul></li></ul></nav></aside><div class="post-nav thin"><a class=next-post href=https://razeencheng.com/posts/mime-types-quick-look/><span class=post-nav-label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>&nbsp;新</span><br><span>MIME Types 速查表</span></a>
+<a class=prev-post href=https://razeencheng.com/posts/blog-migration-hexo-next/><span class=post-nav-label>旧&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span><br><span>我又又又把博客迁移了</span></a></div><div id=google-ads class=thin><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4450478767591566" crossorigin=anonymous></script>
+<ins class=adsbygoogle style=display:block data-ad-client=ca-pub-4450478767591566 data-ad-slot=8164928618 data-ad-format=auto data-full-width-responsive=true></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({})</script></div><div id=comments class=thin><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//razeen-me.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div></main><footer id=site-footer class="section-inner thin"><p>&copy; 2017 - 2022 <a href=https://razeencheng.com>Razeen</a> &#183; <a href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank rel=noopener>CC BY-NC 4.0</a></p><p>Made with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> &#183; Theme <a href=https://github.com/Track3/hermit target=_blank rel=noopener>Hermit</a> &#183; <a href=https://razeencheng.com/posts/index.xml target=_blank title=rss><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1"/></svg></a></p></footer><script src=https://s.razeen.cn/assets/js/mermaid.min.js></script>
+<script>Array.from(document.getElementsByClassName("language-mermaid")).forEach(e=>{e.parentElement.outerHTML=`<div class="mermaid">${e.innerText}</div>`})</script><script src=https://razeencheng.com/js/main.min.4e6345981f1ff315bbb7afa61eacf413923b536e5a4d5b22f698d96b624d48c4.js integrity="sha256-TmNFmB8f8xW7t6+mHqz0E5I7U25aTVsi9pjZa2JNSMQ=" crossorigin=anonymous></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4BKH11NSEY"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-4BKH11NSEY")</script></body></html>

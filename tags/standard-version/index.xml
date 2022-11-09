@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>standard-version on Razeen`s Blog</title><link>https://razeencheng.com/tags/standard-version/</link><description>Recent content in standard-version on Razeen`s Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Sun, 12 Apr 2020 23:27:53 +0000</lastBuildDate><atom:link href="https://razeencheng.com/tags/standard-version/index.xml" rel="self" type="application/rss+xml"/><item><title>规范 git commit message 与自动化版本控制</title><link>https://razeencheng.com/posts/conventional-commits-and-standard-version/</link><pubDate>Sun, 12 Apr 2020 23:27:53 +0000</pubDate><guid>https://razeencheng.com/posts/conventional-commits-and-standard-version/</guid><description>&lt;p>git commit message是你对你所编码内容的总结概括。规范、详细的git commit message不仅能体现你的内容概括能力，还能为你自己和团队，或项目带来巨大的好处，这也是我所推崇的。但很多小伙伴不愿意花时间在这里，经常会写出&lt;code>优化了一些功能&lt;/code>、&lt;code>修复了一些BUG&lt;/code>等等模糊不清的commit message，完全没有意识到这么写会带来一些严重的问题：&lt;/p>
+&lt;ul>
+&lt;li>管理者/其他项目参与者无法快速获取有用信息，判定修改内容，只有花大量时间阅读源码；&lt;/li>
+&lt;li>事后无法快速定位以前遇到的类似问题；&lt;/li>
+&lt;li>无法自动化版本控制，只有每次重新阅读代码，手动写一些详细的描述，用来发布新版或提交测试。&lt;/li>
+&lt;/ul>
+&lt;p>规范、详细的git commit message不仅能解决这些问题，还能带来更多的好处。&lt;/p></description></item></channel></rss>

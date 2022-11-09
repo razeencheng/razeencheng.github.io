@@ -1,0 +1,285 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=theme-color content="#494f5c"><meta name=msapplication-TileColor content="#494f5c"><meta itemprop=name content="Homelib(8): 搭建自用 Gitlab 与 Docker 仓库"><meta itemprop=description content="为了托管一些私有的代码，折腾 CI/CD，我用 Docker 搭建一套自己的 Gitlab. Gitlab 社区版功能很强大, 包含且不限于 代码托管、容器镜像库，Gitlab Pages 以及 CI/CD。"><meta itemprop=datePublished content="2021-12-19T16:16:29+08:00"><meta itemprop=dateModified content="2021-12-19T16:16:29+08:00"><meta itemprop=wordCount content="1386"><meta itemprop=image content="https://razeencheng.com/android-chrome-192x192.png"><meta itemprop=keywords content="docker,homelib,gitlab,"><meta property="og:title" content="Homelib(8): 搭建自用 Gitlab 与 Docker 仓库"><meta property="og:description" content="为了托管一些私有的代码，折腾 CI/CD，我用 Docker 搭建一套自己的 Gitlab. Gitlab 社区版功能很强大, 包含且不限于 代码托管、容器镜像库，Gitlab Pages 以及 CI/CD。"><meta property="og:type" content="article"><meta property="og:url" content="https://razeencheng.com/posts/homelib-008-gitlab-and-registry/"><meta property="og:image" content="https://razeencheng.com/android-chrome-192x192.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2021-12-19T16:16:29+08:00"><meta property="article:modified_time" content="2021-12-19T16:16:29+08:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://razeencheng.com/android-chrome-192x192.png"><meta name=twitter:title content="Homelib(8): 搭建自用 Gitlab 与 Docker 仓库"><meta name=twitter:description content="为了托管一些私有的代码，折腾 CI/CD，我用 Docker 搭建一套自己的 Gitlab. Gitlab 社区版功能很强大, 包含且不限于 代码托管、容器镜像库，Gitlab Pages 以及 CI/CD。"><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon href=/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=mask-icon href=/safari-pinned-tab.svg><link rel=manifest crossorigin=use-credentials href=/site.webmanifest><link rel="shortcut icon" href=/favicon.ico><title>Homelib(8): 搭建自用 Gitlab 与 Docker 仓库</title><link rel=stylesheet href=https://razeencheng.com/css/style.min.a88782436067f84711b02510e9f09bd68bd49c25cd2e03624cd7320fa893b6ea.css integrity="sha256-qIeCQ2Bn+EcRsCUQ6fCb1ovUnCXNLgNiTNcyD6iTtuo=" crossorigin=anonymous></head><body id=page><header id=site-header><div class="hdr-wrapper section-inner"><div class=hdr-left><div class=site-branding><a href=https://razeencheng.com>Razeen`s Blog</a></div><nav class="site-nav hide-in-mobile"><a href=https://razeencheng.com/posts/>文章</a>
+<a href=https://razeencheng.com/tags/>标签</a>
+<a href=https://razeencheng.com/categories/>分类</a>
+<a href=https://razeencheng.com/about/>关于</a></nav></div><div class="hdr-right hdr-icons"><span class="hdr-social hide-in-mobile"><a href=https://twitter.com/razeencheng target=_blank rel="noopener me" title=Twitter><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9.0 01-3.14 1.53 4.48 4.48.0 00-7.86 3v1A10.66 10.66.0 013 4s-4 9 5 13a11.64 11.64.0 01-7 2c9 5 20 0 20-11.5a4.5 4.5.0 00-.08-.83A7.72 7.72.0 0023 3z"/></svg></a><a href=https://github.com/razeencheng target=_blank rel="noopener me" title=Github><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg></a></span><button id=menu-btn class=hdr-btn title=菜单><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><div id=mobile-menu class="animated fast"><ul><li><a href=https://razeencheng.com/posts/>文章</a></li><li><a href=https://razeencheng.com/tags/>标签</a></li><li><a href=https://razeencheng.com/categories/>分类</a></li><li><a href=https://razeencheng.com/about/>关于</a></li></ul></div><main class="site-main section-inner"><article class=thin><header class=post-header><div class=post-meta><span>Dec 19, 2021</span></div><h1>Homelib(8): 搭建自用 Gitlab 与 Docker 仓库</h1></header><div class=content><p>为了托管一些私有的代码，折腾 CI/CD，我用 Docker 搭建一套自己的 Gitlab. Gitlab 社区版功能很强大, 包含且不限于 代码托管、容器镜像库，Gitlab Pages 以及 CI/CD。</p><h3 id=搭建服务>搭建服务<a href=#搭建服务 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>我用的是 <code>docker-compose</code> 搭建的，Gitlab 版本为 <code>14.1.1-ce.0</code>, 整个镜像文件有 2.23G，配置文件如下。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>version</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;3&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nt>services</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w> </span><span class=nt>web</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>image</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;gitlab/gitlab-ce:14.1.1-ce.0&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>restart</span><span class=p>:</span><span class=w> </span><span class=l>always</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>container_name</span><span class=p>:</span><span class=w> </span><span class=l>gitlab</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>hostname</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;gitlab.razeen.cn&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>environment</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>GITLAB_OMNIBUS_CONFIG</span><span class=p>:</span><span class=w> </span><span class=p>|</span><span class=sd>
+</span></span></span><span class=line><span class=cl><span class=sd>      external_url &#34;https://gitlab.razeen.cn&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      letsencrypt[&#39;enable&#39;] = false
+</span></span></span><span class=line><span class=cl><span class=sd>      nginx[&#39;redirect_http_to_https&#39;] = false
+</span></span></span><span class=line><span class=cl><span class=sd>      nginx[&#39;listen_port&#39;] = 80
+</span></span></span><span class=line><span class=cl><span class=sd>      nginx[&#39;listen_https&#39;] = false
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_pages[&#39;enable&#39;] = true
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_pages[&#39;inplace_chroot&#39;] = true
+</span></span></span><span class=line><span class=cl><span class=sd>      pages_external_url &#34;https://pages.razeen.cn&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      pages_nginx[&#39;listen_port&#39;] = 80
+</span></span></span><span class=line><span class=cl><span class=sd>      pages_nginx[&#39;listen_https&#39;] = false
+</span></span></span><span class=line><span class=cl><span class=sd>      registry[&#39;enabled&#39;] = true
+</span></span></span><span class=line><span class=cl><span class=sd>      registry_nginx[&#39;listen_port&#39;] = 5050
+</span></span></span><span class=line><span class=cl><span class=sd>      registry_nginx[&#39;listen_https&#39;] = false
+</span></span></span><span class=line><span class=cl><span class=sd>      registry_external_url &#34;https://registry.razeen.cn&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;gitlab_shell_ssh_port&#39;] = 20022
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;gitlab_email_from&#39;] = &#39;git@xxx.xxx&#39;
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_enable&#39;] = true
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_address&#39;] = &#34;smtp.qq.com&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_port&#39;] = 465
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_user_name&#39;] = &#34;xxxx@xxxx.cn&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_password&#39;] = &#34;xxxxxxx&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_authentication&#39;] = &#34;login&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_enable_starttls_auto&#39;] = true
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_tls&#39;] = true
+</span></span></span><span class=line><span class=cl><span class=sd>      gitlab_rails[&#39;smtp_domain&#39;] = &#34;exmail.qq.com&#34;
+</span></span></span><span class=line><span class=cl><span class=sd>      grafana[&#39;enable&#39;] = false
+</span></span></span><span class=line><span class=cl><span class=sd>      prometheus_monitoring[&#39;enable&#39;] = false</span><span class=w>      
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>ports</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=s1>&#39;127.0.0.1:19080:80&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=s1>&#39;127.0.0.1:19050:5050&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=s1>&#39;20022:22&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>volumes</span><span class=p>:</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=s1>&#39;./config:/etc/gitlab&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=s1>&#39;./data:/var/opt/gitlab&#39;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span>- <span class=s1>&#39;./logs:/var/log/gitlab&#39;</span><span class=w>
+</span></span></span></code></pre></div><p>在配置中，我们只使用了一个环境变量 <code>GITLAB_OMNIBUS_CONFIG</code> 就将我们需要的参数指定好了。其中主要开启了：</p><ul><li><input checked disabled type=checkbox> Gitlab</li><li><input checked disabled type=checkbox> Pages （静态页面）</li><li><input checked disabled type=checkbox> Registry (镜像仓库）</li><li><input checked disabled type=checkbox> SMTP 服务</li></ul><p>简要配置介绍如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># gitlab 服务的地址</span>
+</span></span><span class=line><span class=cl>      external_url <span class=s2>&#34;https://gitlab.razeen.cn&#34;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 如果你开启了该选项， 可以自动申请并使用 Let\`s Encrypt 的证书，当然还要配合一些其他设置。 我这里由于 `HTTPS` 是我自己管理的就关闭了该选项；</span>
+</span></span><span class=line><span class=cl>      letsencrypt<span class=o>[</span><span class=s1>&#39;enable&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>false</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># Gitlab 主服务 Nginx 的配置， 我把 HTTPS 关闭了，全部自己统计管理；</span>
+</span></span><span class=line><span class=cl>      nginx<span class=o>[</span><span class=s1>&#39;redirect_http_to_https&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>false</span>
+</span></span><span class=line><span class=cl>      nginx<span class=o>[</span><span class=s1>&#39;listen_port&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=m>80</span>
+</span></span><span class=line><span class=cl>      nginx<span class=o>[</span><span class=s1>&#39;listen_https&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>false</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 有时会结合 CI/CD 部署一些静态页面，就把 Pages 开了。</span>
+</span></span><span class=line><span class=cl>      gitlab_pages<span class=o>[</span><span class=s1>&#39;enable&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>true</span>
+</span></span><span class=line><span class=cl>      gitlab_pages<span class=o>[</span><span class=s1>&#39;inplace_chroot&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>true</span>
+</span></span><span class=line><span class=cl>      pages_external_url <span class=s2>&#34;https://pages.razeen.cn&#34;</span>
+</span></span><span class=line><span class=cl>      pages_nginx<span class=o>[</span><span class=s1>&#39;listen_port&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=m>80</span>
+</span></span><span class=line><span class=cl>      pages_nginx<span class=o>[</span><span class=s1>&#39;listen_https&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>false</span>
+</span></span><span class=line><span class=cl>      
+</span></span><span class=line><span class=cl><span class=c1># 镜像仓库是必须要有的，一些镜像放到内部，自用起来速度杠杠的。</span>
+</span></span><span class=line><span class=cl>      registry<span class=o>[</span><span class=s1>&#39;enabled&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>true</span>
+</span></span><span class=line><span class=cl>      registry_nginx<span class=o>[</span><span class=s1>&#39;listen_port&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=m>5050</span>
+</span></span><span class=line><span class=cl>      registry_nginx<span class=o>[</span><span class=s1>&#39;listen_https&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>false</span>
+</span></span><span class=line><span class=cl>      registry_external_url <span class=s2>&#34;https://registry.razeen.cn&#34;</span>
+</span></span><span class=line><span class=cl>      
+</span></span><span class=line><span class=cl><span class=c1># 一些基础的配置，SSH 端口，以及 SMTP 邮件服务（我用的QQ的）。</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;gitlab_shell_ssh_port&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=m>20022</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;gitlab_email_from&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=s1>&#39;git@xxx.xxx&#39;</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_enable&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>true</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_address&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=s2>&#34;smtp.qq.com&#34;</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_port&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=m>465</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_user_name&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=s2>&#34;xxxx@xxxx.cn&#34;</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_password&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=s2>&#34;xxxxxxx&#34;</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_authentication&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=s2>&#34;login&#34;</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_enable_starttls_auto&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>true</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_tls&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>true</span>
+</span></span><span class=line><span class=cl>      gitlab_rails<span class=o>[</span><span class=s1>&#39;smtp_domain&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=s2>&#34;exmail.qq.com&#34;</span>
+</span></span><span class=line><span class=cl>      
+</span></span><span class=line><span class=cl><span class=c1># grafana 和 prometheus 我关了，后面自建</span>
+</span></span><span class=line><span class=cl>      grafana<span class=o>[</span><span class=s1>&#39;enable&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>false</span>
+</span></span><span class=line><span class=cl>      prometheus_monitoring<span class=o>[</span><span class=s1>&#39;enable&#39;</span><span class=o>]</span> <span class=o>=</span> <span class=nb>false</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>      
+</span></span><span class=line><span class=cl><span class=c1># 几个关键的端口先映射出来，80是服务端口，5050是镜像仓库，22就是SSH了。</span>
+</span></span><span class=line><span class=cl>  ports:
+</span></span><span class=line><span class=cl>    - <span class=s1>&#39;127.0.0.1:19080:80&#39;</span>
+</span></span><span class=line><span class=cl>    - <span class=s1>&#39;127.0.0.1:19050:5050&#39;</span>
+</span></span><span class=line><span class=cl>    - <span class=s1>&#39;20022:22&#39;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 配置、数据、日志 目录也持久化一下</span>
+</span></span><span class=line><span class=cl>  volumes:
+</span></span><span class=line><span class=cl>    - <span class=s1>&#39;./config:/etc/gitlab&#39;</span>
+</span></span><span class=line><span class=cl>    - <span class=s1>&#39;./data:/var/opt/gitlab&#39;</span>
+</span></span><span class=line><span class=cl>    - <span class=s1>&#39;./logs:/var/log/gitlab&#39;</span>
+</span></span></code></pre></div><p>配置好这些，镜像拉下来后，第一次等个几分钟就启动好了（取决于服务器性能）。。。</p><h3 id=通配符证书申请>通配符证书申请<a href=#通配符证书申请 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>由于要开启 HTTPS, 证书少不了， 首先想到的是 Let`s Encrypt 的通配符了，结合 Acme 自动化，免费 且 省心。 但 Let`s Encrypt 目前在国内申请老不稳定，我就选用了 ZeroSSL 的通配证书， 两行命令搞定。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 注册账户</span>
+</span></span><span class=line><span class=cl>docker run --rm  -it  <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -v <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/acme&#34;</span>:/acme.sh  <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  neilpang/acme.sh --register-account  -m me@razeen.me --server zerossl
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 申请 ECC 证书, 我用的是 DNSPod 直接写上 DNS 服务商密钥的两个环境变量即可。</span>
+</span></span><span class=line><span class=cl><span class=c1># 其他的还参考 https://github.com/acmesh-official/acme.sh/wiki/dnsapi</span>
+</span></span><span class=line><span class=cl>docker run --rm  -it  <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -v <span class=s2>&#34;</span><span class=k>$(</span><span class=nb>pwd</span><span class=k>)</span><span class=s2>/acme&#34;</span>:/acme.sh  <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  --net<span class=o>=</span>host <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -e <span class=s2>&#34;DP_Id=xxxx&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  -e <span class=s2>&#34;DP_Key=xxxx&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>  neilpang/acme.sh  --issue <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --dns dns_dp <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -d <span class=s2>&#34;razeen.cn&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -d <span class=s2>&#34;*.razeen.cn&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    -d <span class=s2>&#34;*.pages.razeen.cn&#34;</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --keylength ec-256 <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --dnssleep <span class=m>300</span> <span class=se>\
+</span></span></span><span class=line><span class=cl><span class=se></span>    --force
+</span></span></code></pre></div><p>这样证书就申请好了，在<code>$(pwd)/acme</code>目录下可找到对应目录及文件。</p><h3 id=自建-nginx>自建 Nginx<a href=#自建-nginx class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>由于机器上我有一些其他服务要用 Nginx, 我就统一用了同一个 Nginx, 配置如下。</p><ul><li>Gitlab 服务</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-nginx data-lang=nginx><span class=line><span class=cl><span class=k>server</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>  <span class=kn>listen</span> <span class=mi>443</span> <span class=s>ssl</span> <span class=s>http2</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>server_name</span> <span class=s>gitlab.razeen.cn</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>server_tokens</span> <span class=no>off</span><span class=p>;</span> <span class=c1>## Don&#39;t show the nginx version number, a security best practice
+</span></span></span><span class=line><span class=cl><span class=c1></span>
+</span></span><span class=line><span class=cl>  <span class=c1>## Increase this if you want to upload large attachments
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=c1>## Or if you want to accept large git objects over http
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kn>client_max_body_size</span> <span class=mi>0</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## Strong SSL Security
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=c1>## https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html &amp; https://cipherli.st/
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kn>ssl_certificate</span>              <span class=s>/etc/nginx/ssl/razeen_wildcard.crt</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_certificate_key</span>          <span class=s>/etc/nginx/ssl/razeen_wildcard.key</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_verify_client</span> <span class=s>optional</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_client_certificate</span> <span class=s>/etc/nginx/ssl/myroot.pem</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_verify_depth</span> <span class=mi>1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># GitLab needs backwards compatible ciphers to retain compatibility with Java IDEs
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kn>ssl_ciphers</span> <span class=s>&#39;ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_protocols</span>  <span class=s>TLSv1.2</span> <span class=s>TLSv1.3</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_prefer_server_ciphers</span> <span class=no>off</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_session_tickets</span> <span class=no>off</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>ssl_session_timeout</span>  <span class=s>1d</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>access_log</span>  <span class=s>/var/log/nginx/access_gitlab.log</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>error_log</span>   <span class=s>/var/log/nginx/error_gitlab.log</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## HSTS Config
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=c1>## https://www.nginx.com/blog/http-strict-transport-security-hsts-and-nginx/
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kn>add_header</span> <span class=s>Strict-Transport-Security</span> <span class=s>&#34;max-age=63072000&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># Rails sets a default policy of strict-origin-when-cross-origin, so
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=c1># hide that and just send the one we&#39;ve configured for nginx
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kn>proxy_hide_header</span> <span class=s>Referrer-Policy</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>add_header</span> <span class=s>Referrer-Policy</span> <span class=s>strict-origin-when-cross-origin</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>if</span> <span class=s>(</span><span class=nv>$http_host</span> <span class=p>=</span> <span class=s>&#34;&#34;)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kn>set</span> <span class=nv>$http_host_with_default</span> <span class=s>&#34;gitlab.razeen.cn&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>if</span> <span class=s>(</span><span class=nv>$http_host</span> <span class=s>!=</span> <span class=s>&#34;&#34;)</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kn>set</span> <span class=nv>$http_host_with_default</span> <span class=nv>$http_host</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## https://github.com/gitlabhq/gitlabhq/issues/694
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=c1>## Some requests take more than 30 seconds.
+</span></span></span><span class=line><span class=cl><span class=c1></span>  <span class=kn>proxy_read_timeout</span>      <span class=mi>3600</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_connect_timeout</span>   <span class=mi>300</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_redirect</span>          <span class=no>off</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_http_version</span> <span class=mi>1</span><span class=s>.1</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_set_header</span> <span class=s>Host</span> <span class=nv>$http_host_with_default</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_set_header</span> <span class=s>Upgrade</span> <span class=nv>$http_upgrade</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_set_header</span> <span class=s>X-Forwarded-Ssl</span> <span class=no>on</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_set_header</span>             <span class=s>X-Real-IP</span>         <span class=nv>$real_addr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_set_header</span>             <span class=s>X-Forwarded-For</span>   <span class=nv>$forwarded_for</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=kn>proxy_set_header</span>             <span class=s>X-Forwarded-Proto</span> <span class=s>https</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=kn>location</span> <span class=s>/</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>    <span class=kn>proxy_cache</span> <span class=no>off</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    <span class=kn>proxy_pass</span>  <span class=s>http://127.0.0.1:19080</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><ul><li>镜像仓库配置</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>server <span class=o>{</span>
+</span></span><span class=line><span class=cl>  listen <span class=m>443</span> ssl<span class=p>;</span>
+</span></span><span class=line><span class=cl>  server_name register.razeen.cn<span class=p>;</span>
+</span></span><span class=line><span class=cl>  server_tokens off<span class=p>;</span> <span class=c1>## Don&#39;t show the nginx version number, a security best practice</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  client_max_body_size 0<span class=p>;</span>
+</span></span><span class=line><span class=cl>  chunked_transfer_encoding on<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## Strong SSL Security</span>
+</span></span><span class=line><span class=cl>  <span class=c1>## https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html &amp; https://cipherli.st/</span>
+</span></span><span class=line><span class=cl>  ssl_certificate              /etc/nginx/ssl/razeen_wildcard.crt<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_certificate_key          /etc/nginx/ssl/razeen_wildcard.key<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  ssl_ciphers <span class=s1>&#39;ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_protocols  TLSv1.2 TLSv1.3<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_prefer_server_ciphers off<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_session_tickets off<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_session_timeout  1d<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## HSTS Config</span>
+</span></span><span class=line><span class=cl>  <span class=c1>## https://www.nginx.com/blog/http-strict-transport-security-hsts-and-nginx/</span>
+</span></span><span class=line><span class=cl>  add_header Strict-Transport-Security <span class=s2>&#34;max-age=63072000&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  access_log  /var/log/nginx/access_gitlab_registry.log<span class=p>;</span>
+</span></span><span class=line><span class=cl>  error_log   /var/log/nginx/error_gitlab_registry.log<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  location / <span class=o>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    proxy_set_header Host <span class=nv>$http_host</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header X-Real-IP <span class=nv>$remote_addr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header X-Forwarded-For <span class=nv>$proxy_add_x_forwarded_for</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header X-Forwarded-Proto https<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header X-Forwarded-Ssl on<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    proxy_read_timeout                  900<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_cache off<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_buffering off<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_request_buffering off<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_http_version 1.1<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    proxy_pass          http://127.0.0.1:19050<span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></div><ul><li>Pages 配置</li></ul><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>server <span class=o>{</span>
+</span></span><span class=line><span class=cl>  listen <span class=m>443</span> ssl http2<span class=p>;</span>
+</span></span><span class=line><span class=cl>  server_name  ~^<span class=o>(</span>?&lt;group&gt;.*<span class=o>)</span><span class=se>\.</span>pages<span class=se>\.</span>razeen<span class=se>\.</span>cn$<span class=p>;</span>
+</span></span><span class=line><span class=cl>  server_tokens off<span class=p>;</span> <span class=c1>## Don&#39;t show the nginx version number, a security best practice</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## Disable symlink traversal</span>
+</span></span><span class=line><span class=cl>  disable_symlinks on<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## Strong SSL Security</span>
+</span></span><span class=line><span class=cl>  <span class=c1>## https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html &amp; https://cipherli.st/</span>
+</span></span><span class=line><span class=cl>  ssl_certificate              /etc/nginx/ssl/razeen_wildcard.crt<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_certificate_key          /etc/nginx/ssl/razeen_wildcard.key<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># GitLab needs backwards compatible ciphers to retain compatibility with Java IDEs</span>
+</span></span><span class=line><span class=cl>  ssl_ciphers <span class=s1>&#39;ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384&#39;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_protocols  TLSv1.2 TLSv1.3<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_prefer_server_ciphers off<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_session_tickets off<span class=p>;</span>
+</span></span><span class=line><span class=cl>  ssl_session_timeout  1d<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  access_log  /var/log/nginx/access_gitlab_pages.log<span class=p>;</span>
+</span></span><span class=line><span class=cl>  error_log   /var/log/nginx/error_gitlab_pages.log<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1>## HSTS Config</span>
+</span></span><span class=line><span class=cl>  <span class=c1>## https://www.nginx.com/blog/http-strict-transport-security-hsts-and-nginx/</span>
+</span></span><span class=line><span class=cl>  add_header Strict-Transport-Security <span class=s2>&#34;max-age=63072000&#34;</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>  <span class=c1># Pass everything to pages daemon</span>
+</span></span><span class=line><span class=cl>  location / <span class=o>{</span>
+</span></span><span class=line><span class=cl>    proxy_set_header Host <span class=nv>$http_host</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header X-Forwarded-Ssl on<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header             X-Real-IP         <span class=nv>$real_addr</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header             X-Forwarded-For   <span class=nv>$forwarded_for</span><span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_set_header             X-Forwarded-Proto https<span class=p>;</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>    proxy_cache off<span class=p>;</span>
+</span></span><span class=line><span class=cl>    proxy_pass          http://127.0.0.1:19080<span class=p>;</span>
+</span></span><span class=line><span class=cl>  <span class=o>}</span>
+</span></span><span class=line><span class=cl><span class=o>}</span>
+</span></span></code></pre></div><p>配置好后，我们就可以愉快的通过 HTTPS 访问了。到这我们 Gitlab 就搭建好了，功能使用我们就可以后面慢慢折腾啦。</p><p>最后，看一下我的管理界面（我还拼了个简单的Logo==）。</p><p><img src=https://s.razeen.cn/images/2021/mygitlabadmin.jpg alt=my-gitlab-admin></p></div><div class="related-posts thin"><h2>相关推荐</h2><ul><li><a href=/posts/nginx-tcp-stream-proxy-keep-real-client-ip/>Nginx Tcp 转发保留客户端真实 IP （PROXY Protocol）</a></li><li><a href=/posts/homelib-007-set-ipsec-vpn-client/>Homelib (7)：IPSec VPN（基于证书认证）客户端设置</a></li><li><a href=/posts/homelib-006-build-ipsec-vpn/>Homelib (6)： 基于自签发证书的 IPSec VPN 搭建</a></li><li><a href=/posts/homelib-005-ddns/>Homelib (5)： DDNS 动态域名解析</a></li><li><a href=/posts/homelib-004-prepare-the-server-environment/>Homelib (4)： Linux 服务器基础环境准备</a></li></ul></div><hr class=post-end><footer class=post-info><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7" y2="7"/></svg><span class=tag><a href=https://razeencheng.com/tags/docker>docker</a></span><span class=tag><a href=https://razeencheng.com/tags/homelib>homelib</a></span><span class=tag><a href=https://razeencheng.com/tags/gitlab>gitlab</a></span></p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6A2 2 0 004 4v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>1386 字</p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>2021-12-19 08:16 +0000</p></footer></article><aside id=toc class=show-toc><div class=toc-title>目录</div><nav id=TableOfContents><ul><li><ul><li><a href=#搭建服务>搭建服务</a></li><li><a href=#通配符证书申请>通配符证书申请</a></li><li><a href=#自建-nginx>自建 Nginx</a></li></ul></li></ul></nav></aside><div class="post-nav thin"><a class=next-post href=https://razeencheng.com/posts/makedown-flow-and-mermaid-diagrams/><span class=post-nav-label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>&nbsp;新</span><br><span>利用 Markdown 画一些流程图、时序图、甘特图等</span></a>
+<a class=prev-post href=https://razeencheng.com/posts/nginx-tcp-stream-proxy-keep-real-client-ip/><span class=post-nav-label>旧&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span><br><span>Nginx Tcp 转发保留客户端真实 IP （PROXY Protocol）</span></a></div><div id=google-ads class=thin><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4450478767591566" crossorigin=anonymous></script>
+<ins class=adsbygoogle style=display:block data-ad-client=ca-pub-4450478767591566 data-ad-slot=8164928618 data-ad-format=auto data-full-width-responsive=true></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({})</script></div><div id=comments class=thin><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//razeen-me.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div></main><footer id=site-footer class="section-inner thin"><p>&copy; 2017 - 2022 <a href=https://razeencheng.com>Razeen</a> &#183; <a href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank rel=noopener>CC BY-NC 4.0</a></p><p>Made with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> &#183; Theme <a href=https://github.com/Track3/hermit target=_blank rel=noopener>Hermit</a> &#183; <a href=https://razeencheng.com/posts/index.xml target=_blank title=rss><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1"/></svg></a></p></footer><script src=https://s.razeen.cn/assets/js/mermaid.min.js></script>
+<script>Array.from(document.getElementsByClassName("language-mermaid")).forEach(e=>{e.parentElement.outerHTML=`<div class="mermaid">${e.innerText}</div>`})</script><script src=https://razeencheng.com/js/main.min.4e6345981f1ff315bbb7afa61eacf413923b536e5a4d5b22f698d96b624d48c4.js integrity="sha256-TmNFmB8f8xW7t6+mHqz0E5I7U25aTVsi9pjZa2JNSMQ=" crossorigin=anonymous></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4BKH11NSEY"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-4BKH11NSEY")</script></body></html>

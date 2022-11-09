@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>next on Razeen`s Blog</title><link>https://razeencheng.com/tags/next/</link><description>Recent content in next on Razeen`s Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Sun, 03 Feb 2019 19:00:36 +0000</lastBuildDate><atom:link href="https://razeencheng.com/tags/next/index.xml" rel="self" type="application/rss+xml"/><item><title>我又又又把博客迁移了</title><link>https://razeencheng.com/posts/blog-migration-hexo-next/</link><pubDate>Sun, 03 Feb 2019 19:00:36 +0000</pubDate><guid>https://razeencheng.com/posts/blog-migration-hexo-next/</guid><description>&lt;p>好久没有维护博客，看了一下&lt;a href="https://github.com/theme-next/hexo-theme-next">Next主题&lt;/a>的相关功能，最后决定将博客切到了hexo，原博客在&lt;a href="https://blog.netcj.com">这里&lt;/a>。原&lt;a href="https://github.com/eiblog/eiblog">eiblog&lt;/a>有些东西想去更新，一直没有动手，这里立个flag，有空了在eiblog基础上改些东西，大概有：&lt;/p>
+&lt;ul>
+&lt;li>&lt;input disabled="" type="checkbox"> 自动更新disqus js(每次js更新了，disqus就加载不了)&lt;/li>
+&lt;li>&lt;input disabled="" type="checkbox"> 数据库切换到sqlite3 (用gorm支持多种数据库)&lt;/li>
+&lt;li>&lt;input disabled="" type="checkbox"> 侧边栏可以自定义添加页面&lt;/li>
+&lt;li>&lt;input disabled="" type="checkbox"> 更容易部署&lt;/li>
+&lt;/ul></description></item></channel></rss>

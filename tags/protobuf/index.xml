@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>protobuf on Razeen`s Blog</title><link>https://razeencheng.com/tags/protobuf/</link><description>Recent content in protobuf on Razeen`s Blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright><lastBuildDate>Mon, 16 Jul 2018 01:00:41 +0000</lastBuildDate><atom:link href="https://razeencheng.com/tags/protobuf/index.xml" rel="self" type="application/rss+xml"/><item><title>gRPC在Go中的使用（一）Protocol Buffers语法与相关使用</title><link>https://razeencheng.com/posts/how-to-use-grpc-in-golang-01/</link><pubDate>Mon, 16 Jul 2018 01:00:41 +0000</pubDate><guid>https://razeencheng.com/posts/how-to-use-grpc-in-golang-01/</guid><description>&lt;p>在gRPC官网用了一句话来介绍:“一个高性能、开源的通用RPC框架”，同时介绍了其四大特点：&lt;/p>
+&lt;ul>
+&lt;li>定义简单&lt;/li>
+&lt;li>支持多种编程语言多种平台&lt;/li>
+&lt;li>快速启动和缩放&lt;/li>
+&lt;li>双向流媒体和集成身份验证&lt;/li>
+&lt;/ul></description></item></channel></rss>

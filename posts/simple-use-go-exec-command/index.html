@@ -1,0 +1,357 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=theme-color content="#494f5c"><meta name=msapplication-TileColor content="#494f5c"><meta itemprop=name content="Go学习笔记(八) | 使用 os/exec 执行命令"><meta itemprop=description content="这篇文章主要总结了我在学习使用go os/exec包去调用外部命令的一些方法。"><meta itemprop=datePublished content="2019-05-30T21:06:43+00:00"><meta itemprop=dateModified content="2019-05-30T21:06:43+00:00"><meta itemprop=wordCount content="2167"><meta itemprop=image content="https://razeencheng.com/android-chrome-192x192.png"><meta itemprop=keywords content="golang,"><meta property="og:title" content="Go学习笔记(八) | 使用 os/exec 执行命令"><meta property="og:description" content="这篇文章主要总结了我在学习使用go os/exec包去调用外部命令的一些方法。"><meta property="og:type" content="article"><meta property="og:url" content="https://razeencheng.com/posts/simple-use-go-exec-command/"><meta property="og:image" content="https://razeencheng.com/android-chrome-192x192.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2019-05-30T21:06:43+00:00"><meta property="article:modified_time" content="2019-05-30T21:06:43+00:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://razeencheng.com/android-chrome-192x192.png"><meta name=twitter:title content="Go学习笔记(八) | 使用 os/exec 执行命令"><meta name=twitter:description content="这篇文章主要总结了我在学习使用go os/exec包去调用外部命令的一些方法。"><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon href=/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=mask-icon href=/safari-pinned-tab.svg><link rel=manifest crossorigin=use-credentials href=/site.webmanifest><link rel="shortcut icon" href=/favicon.ico><title>Go学习笔记(八) | 使用 os/exec 执行命令</title><link rel=stylesheet href=https://razeencheng.com/css/style.min.a88782436067f84711b02510e9f09bd68bd49c25cd2e03624cd7320fa893b6ea.css integrity="sha256-qIeCQ2Bn+EcRsCUQ6fCb1ovUnCXNLgNiTNcyD6iTtuo=" crossorigin=anonymous></head><body id=page><header id=site-header><div class="hdr-wrapper section-inner"><div class=hdr-left><div class=site-branding><a href=https://razeencheng.com>Razeen`s Blog</a></div><nav class="site-nav hide-in-mobile"><a href=https://razeencheng.com/posts/>文章</a>
+<a href=https://razeencheng.com/tags/>标签</a>
+<a href=https://razeencheng.com/categories/>分类</a>
+<a href=https://razeencheng.com/about/>关于</a></nav></div><div class="hdr-right hdr-icons"><span class="hdr-social hide-in-mobile"><a href=https://twitter.com/razeencheng target=_blank rel="noopener me" title=Twitter><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9.0 01-3.14 1.53 4.48 4.48.0 00-7.86 3v1A10.66 10.66.0 013 4s-4 9 5 13a11.64 11.64.0 01-7 2c9 5 20 0 20-11.5a4.5 4.5.0 00-.08-.83A7.72 7.72.0 0023 3z"/></svg></a><a href=https://github.com/razeencheng target=_blank rel="noopener me" title=Github><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg></a></span><button id=menu-btn class=hdr-btn title=菜单><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><div id=mobile-menu class="animated fast"><ul><li><a href=https://razeencheng.com/posts/>文章</a></li><li><a href=https://razeencheng.com/tags/>标签</a></li><li><a href=https://razeencheng.com/categories/>分类</a></li><li><a href=https://razeencheng.com/about/>关于</a></li></ul></div><main class="site-main section-inner"><article class=thin><header class=post-header><div class=post-meta><span>May 30, 2019</span></div><h1>Go学习笔记(八) | 使用 os/exec 执行命令</h1></header><div class=content><p>用Go去调用一些外部的命令其实很愉快的，这遍文章就总结一下我自己日常用的比较多的几种方法。</p><h3 id=关于unix标准输入输出>关于Unix标准输入输出<a href=#关于unix标准输入输出 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>在具体聊<code>os/exec</code>的使用前，了解一下shell的标准输出是很有必要的。</p><p>我们平常会用到或看到这样的命令：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>$ ls xxx 1&gt;out.txt 2&gt;<span class=p>&amp;</span><span class=m>1</span>
+</span></span><span class=line><span class=cl>$ nohup xxx 2&gt;<span class=p>&amp;</span><span class=m>1</span> <span class=p>&amp;</span>
+</span></span></code></pre></div><p>你知道这里<code>1,2</code>含义么？</p><p>其实这里的<code>1,2</code>指的就是Unix文件描述符。文件描述符其实就一数字，每一个文件描述符代表的都是一个文件。如果你打开100个文件，你就会获取到100个文件描述符。</p><p>这里需要注意的一点就是，在Unix中<a href=https://en.wikipedia.org/wiki/Everything_is_a_file><strong>一切皆文件</strong></a>。当然，这里我们不必去深究，我们需要知道的是<code>1，2</code>代表的是标准输出<code>stdout</code>与标准错误输出<code>stderr</code>。还有<code>0</code>代表标准输入<code>stdin</code>。</p><p>在<code>os/exec</code>中就用到了<code>Stdin</code>,<code>Stdout</code>,<code>Stderr</code>，这些基本Unix知识或能帮助我们更好理解这些参数。</p><h3 id=osexec>os/exec<a href=#osexec class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p><code>os/exec</code>包内容并不多，我们大概过一下。</p><ol><li><p><a href=https://godoc.org/os/exec#LookPath>LookPath(file string) (string, error)</a></p><p>寻找可执行文件路径，如果你指定的可执行文件在<code>$PATH</code>中，就会返回这个可执行文件的相对/绝对路径；如果你指定的是一个文件路径，他就是去判断文件是否可读取/执行，返回的是一样的路径。</p><p>在我们需要使用一些外部命令/可执行文件的时候，我们可以先使用该函数判断一下该命令/可执行文件是否有效。</p></li><li><p><a href=https://godoc.org/os/exec#Command>Command(name string, arg &mldr;string) *Cmd</a></p><p>使用你输入的参数，返回Cmd指针，可用于执行Cmd的方法。</p><p>这里<code>name</code>就是我们的命令/可执行文件，后面的参数可以一个一个输入。</p></li><li><p><a href=https://godoc.org/os/exec#CommandContext>CommandContext(ctx context.Context, name string, arg &mldr;string) *Cmd</a></p><p>和上面功能一样，不过我们可以用上下文做一些超时等控制。</p></li><li><p>之后几个就是Cmd的一些方法。</p><ul><li><p><a href=https://godoc.org/os/exec#Cmd.CombinedOutput>(c *Cmd) CombinedOutput() ([]byte, error)</a> 将标准输出，错误输出一起返回；</p></li><li><p><a href=https://godoc.org/os/exec#Cmd.Output>(c *Cmd) Output() ([]byte, error)</a> 输出标准输出，错误从error返回；</p></li><li><p><a href=https://godoc.org/os/exec#Cmd.Run>(c *Cmd) Run() error</a> 执行任务，等待执行完成；</p></li><li><p><a href=https://godoc.org/os/exec#Cmd.Start>(c *Cmd) Start() error</a>， <a href=https://godoc.org/os/exec#Cmd.Wait>(c *Cmd) Wait() error</a> 前者执行任务，不等待完成，用后者等待，并释放资源；</p></li><li><p><a href=https://godoc.org/os/exec#Cmd.StderrPipe>(c *Cmd) StderrPipe() (io.ReadCloser, error)</a></p><p><a href=https://godoc.org/os/exec#Cmd.StdinPipe>(c *Cmd) StdinPipe() (io.WriteCloser, error)</a></p><p><a href=https://godoc.org/os/exec#Cmd.StdoutPipe>(c *Cmd) StdoutPipe() (io.ReadCloser, error)</a></p><p>这三个功能类似，就是提供一个标准输入/输出/错误输出的管道，我们可用这些管道中去输入输出。</p></li></ul></li></ol><p>其实读完，结合官方的一些example，使用很简单，下面具体写几个场景。</p><p><em>注</em></p><ol><li><p>本文全部的Demo在<a href=https://github.com/razeencheng/demo-go/tree/master/os-exec>这里</a>。</p></li><li><p><code>./testcmd/testcmd</code>是我用Go写的一个简单的可执行文件，可以根据指定的参数 输出/延时输出/输出错误，方便我们演示。如下</p></li></ol><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=kd>func</span> <span class=nf>main</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=kd>var</span> <span class=p>(</span>
+</span></span><span class=line><span class=cl>		<span class=nx>start</span> <span class=kt>bool</span>
+</span></span><span class=line><span class=cl>		<span class=nx>e</span>     <span class=kt>bool</span>
+</span></span><span class=line><span class=cl>	<span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>flag</span><span class=p>.</span><span class=nf>BoolVar</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>start</span><span class=p>,</span> <span class=s>&#34;s&#34;</span><span class=p>,</span> <span class=kc>false</span><span class=p>,</span> <span class=s>&#34;start output&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flag</span><span class=p>.</span><span class=nf>BoolVar</span><span class=p>(</span><span class=o>&amp;</span><span class=nx>e</span><span class=p>,</span> <span class=s>&#34;e&#34;</span><span class=p>,</span> <span class=kc>false</span><span class=p>,</span> <span class=s>&#34;output err&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>flag</span><span class=p>.</span><span class=nf>Parse</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>start</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=nx>i</span> <span class=o>:=</span> <span class=mi>5</span><span class=p>;</span> <span class=nx>i</span> <span class=p>&gt;</span> <span class=mi>0</span><span class=p>;</span> <span class=nx>i</span><span class=o>--</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>fmt</span><span class=p>.</span><span class=nf>Fprintln</span><span class=p>(</span><span class=nx>os</span><span class=p>.</span><span class=nx>Stdout</span><span class=p>,</span> <span class=s>&#34;test cmd output&#34;</span><span class=p>,</span> <span class=nx>i</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nx>time</span><span class=p>.</span><span class=nf>Sleep</span><span class=p>(</span><span class=mi>1</span> <span class=o>*</span> <span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>e</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>fmt</span><span class=p>.</span><span class=nf>Fprintln</span><span class=p>(</span><span class=nx>os</span><span class=p>.</span><span class=nx>Stderr</span><span class=p>,</span> <span class=s>&#34;a err occur&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=nx>os</span><span class=p>.</span><span class=nf>Exit</span><span class=p>(</span><span class=mi>1</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>fmt</span><span class=p>.</span><span class=nf>Fprintln</span><span class=p>(</span><span class=nx>os</span><span class=p>.</span><span class=nx>Stdout</span><span class=p>,</span> <span class=s>&#34;test cmd stdout&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><h3 id=简单执行>简单执行<a href=#简单执行 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 简单执行
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>test1</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;./testcmd/testcmd&#34;</span><span class=p>,</span> <span class=s>&#34;-s&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 使用CombinedOutput 将stdout stderr合并输出
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=nx>out</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>CombinedOutput</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;test1 failed %s\n&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=nx>log</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=s>&#34;test1 output &#34;</span><span class=p>,</span> <span class=nb>string</span><span class=p>(</span><span class=nx>out</span><span class=p>))</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>输出：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Run Test <span class=m>1</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:02:39 test1 output  <span class=nb>test</span> cmd output <span class=m>5</span>
+</span></span><span class=line><span class=cl><span class=nb>test</span> cmd output <span class=m>4</span>
+</span></span><span class=line><span class=cl><span class=nb>test</span> cmd output <span class=m>3</span>
+</span></span><span class=line><span class=cl><span class=nb>test</span> cmd output <span class=m>2</span>
+</span></span><span class=line><span class=cl><span class=nb>test</span> cmd output <span class=m>1</span>
+</span></span><span class=line><span class=cl><span class=k>done</span>
+</span></span></code></pre></div><p>整个过程等待5秒，所有结果一次输出。</p><h3 id=分离标准输出与错误输出>分离标准输出与错误输出<a href=#分离标准输出与错误输出 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>将错误分开输出，同时开了两个协成，同步的接收命令的输出内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 	stdout &amp; stderr 分开输出
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>test2</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;./testcmd/testcmd&#34;</span><span class=p>,</span> <span class=s>&#34;-s&#34;</span><span class=p>,</span> <span class=s>&#34;-e&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>stdout</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StdoutPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>stderr</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StderrPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>buf</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>1024</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nx>n</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>stderr</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read err %s&#34;</span><span class=p>,</span> <span class=nb>string</span><span class=p>(</span><span class=nx>buf</span><span class=p>[:</span><span class=nx>n</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=k>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read err %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>buf</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>1024</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nx>n</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>stdout</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=k>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read out %s&#34;</span><span class=p>,</span> <span class=nb>string</span><span class=p>(</span><span class=nx>buf</span><span class=p>[:</span><span class=nx>n</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=k>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read out %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;cmd wait %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>输出：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Run Test <span class=m>2</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:02:39 <span class=nb>read</span> out <span class=nb>test</span> cmd output <span class=m>5</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:02:40 <span class=nb>read</span> out <span class=nb>test</span> cmd output <span class=m>4</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:02:41 <span class=nb>read</span> out <span class=nb>test</span> cmd output <span class=m>3</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:02:42 <span class=nb>read</span> out <span class=nb>test</span> cmd output <span class=m>2</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:02:43 <span class=nb>read</span> out <span class=nb>test</span> cmd output <span class=m>1</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:02:44 <span class=nb>read</span> err a err occur
+</span></span><span class=line><span class=cl>2019/06/06 18:02:44 cmd <span class=nb>wait</span> <span class=nb>exit</span> status <span class=m>1</span>
+</span></span></code></pre></div><h3 id=按行读取输出内容>按行读取输出内容<a href=#按行读取输出内容 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>使用<code>bufio</code>按行读取输出内容。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 按行读输出的内容
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>test3</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;./testcmd/testcmd&#34;</span><span class=p>,</span> <span class=s>&#34;-s&#34;</span><span class=p>,</span> <span class=s>&#34;-e&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>stdout</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StdoutPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>stderr</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StderrPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>oReader</span> <span class=o>:=</span> <span class=nx>bufio</span><span class=p>.</span><span class=nf>NewReader</span><span class=p>(</span><span class=nx>stdout</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>eReader</span> <span class=o>:=</span> <span class=nx>bufio</span><span class=p>.</span><span class=nf>NewReader</span><span class=p>(</span><span class=nx>stderr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>line</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>oReader</span><span class=p>.</span><span class=nf>ReadString</span><span class=p>(</span><span class=sc>&#39;\n&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>line</span> <span class=o>!=</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read line %s&#34;</span><span class=p>,</span> <span class=nx>line</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=o>||</span> <span class=nx>line</span> <span class=o>==</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read line err %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>line</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>eReader</span><span class=p>.</span><span class=nf>ReadString</span><span class=p>(</span><span class=sc>&#39;\n&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>line</span> <span class=o>!=</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read err %s&#34;</span><span class=p>,</span> <span class=nx>line</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=o>||</span> <span class=nx>line</span> <span class=o>==</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read err %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;cmd wait %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>输出：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Run Test <span class=m>3</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:44 <span class=nb>read</span> line <span class=nb>test</span> cmd output <span class=m>5</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:45 <span class=nb>read</span> line <span class=nb>test</span> cmd output <span class=m>4</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:46 <span class=nb>read</span> line <span class=nb>test</span> cmd output <span class=m>3</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:47 <span class=nb>read</span> line <span class=nb>test</span> cmd output <span class=m>2</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:48 <span class=nb>read</span> line <span class=nb>test</span> cmd output <span class=m>1</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:49 <span class=nb>read</span> err a err occur
+</span></span><span class=line><span class=cl>2019/06/06 18:06:49 cmd <span class=nb>wait</span> <span class=nb>exit</span> status <span class=m>1</span>
+</span></span></code></pre></div><h3 id=设置执行超时时间>设置执行超时时间<a href=#设置执行超时时间 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>有时候我们要控制命令的执行时间，这是就可以使用上下文去控制了。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 通过上下文控制超时
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>test4</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>ctx</span><span class=p>,</span> <span class=nx>calcel</span> <span class=o>:=</span> <span class=nx>context</span><span class=p>.</span><span class=nf>WithTimeout</span><span class=p>(</span><span class=nx>context</span><span class=p>.</span><span class=nf>Background</span><span class=p>(),</span> <span class=mi>2</span><span class=o>*</span><span class=nx>time</span><span class=p>.</span><span class=nx>Second</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>defer</span> <span class=nf>calcel</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>CommandContext</span><span class=p>(</span><span class=nx>ctx</span><span class=p>,</span> <span class=s>&#34;./testcmd/testcmd&#34;</span><span class=p>,</span> <span class=s>&#34;-s&#34;</span><span class=p>,</span> <span class=s>&#34;-e&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>stdout</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StdoutPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>stderr</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StderrPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>oReader</span> <span class=o>:=</span> <span class=nx>bufio</span><span class=p>.</span><span class=nf>NewReader</span><span class=p>(</span><span class=nx>stdout</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=nx>eReader</span> <span class=o>:=</span> <span class=nx>bufio</span><span class=p>.</span><span class=nf>NewReader</span><span class=p>(</span><span class=nx>stderr</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>line</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>oReader</span><span class=p>.</span><span class=nf>ReadString</span><span class=p>(</span><span class=sc>&#39;\n&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>line</span> <span class=o>!=</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read line %s&#34;</span><span class=p>,</span> <span class=nx>line</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=o>||</span> <span class=nx>line</span> <span class=o>==</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read line err %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>line</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>eReader</span><span class=p>.</span><span class=nf>ReadString</span><span class=p>(</span><span class=sc>&#39;\n&#39;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>line</span> <span class=o>!=</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read err %s&#34;</span><span class=p>,</span> <span class=nx>line</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=o>||</span> <span class=nx>line</span> <span class=o>==</span> <span class=s>&#34;&#34;</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read err %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;cmd wait %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>输出：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Run Test <span class=m>4</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:49 <span class=nb>read</span> line err EOF
+</span></span><span class=line><span class=cl>2019/06/06 18:06:49 <span class=nb>read</span> err EOF
+</span></span><span class=line><span class=cl>2019/06/06 18:06:49 <span class=nb>read</span> line <span class=nb>test</span> cmd output <span class=m>5</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:50 <span class=nb>read</span> line <span class=nb>test</span> cmd output <span class=m>4</span>
+</span></span><span class=line><span class=cl>2019/06/06 18:06:51 <span class=nb>read</span> line err EOF
+</span></span><span class=line><span class=cl>2019/06/06 18:06:51 <span class=nb>read</span> err EOF
+</span></span><span class=line><span class=cl>2019/06/06 18:06:51 cmd <span class=nb>wait</span> signal: killed
+</span></span></code></pre></div><h3 id=持续输入指令交互模式>持续输入指令，交互模式<a href=#持续输入指令交互模式 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p>有很多命令支持交互模式，我们进入之后就可以持续的输入一些命令，同时获取输出。如<code>openssl</code>命令。</p><p>下面我们需要进入交换模式，执行输入三个命令，并获取输出。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-go data-lang=go><span class=line><span class=cl><span class=c1>// 持续输入
+</span></span></span><span class=line><span class=cl><span class=c1></span><span class=kd>func</span> <span class=nf>test5</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span> <span class=o>:=</span> <span class=nx>exec</span><span class=p>.</span><span class=nf>Command</span><span class=p>(</span><span class=s>&#34;openssl&#34;</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>stdout</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StdoutPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>stderr</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StderrPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>stdin</span><span class=p>,</span> <span class=nx>_</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>StdinPipe</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>cmd</span><span class=p>.</span><span class=nf>Start</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 读
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=kd>var</span> <span class=nx>wg</span> <span class=nx>sync</span><span class=p>.</span><span class=nx>WaitGroup</span>
+</span></span><span class=line><span class=cl>	<span class=nx>wg</span><span class=p>.</span><span class=nf>Add</span><span class=p>(</span><span class=mi>3</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>defer</span> <span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>buf</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>1024</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nx>n</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>stderr</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nb>string</span><span class=p>(</span><span class=nx>buf</span><span class=p>[:</span><span class=nx>n</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=k>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read err %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=k>defer</span> <span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>		<span class=k>for</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>			<span class=nx>buf</span> <span class=o>:=</span> <span class=nb>make</span><span class=p>([]</span><span class=kt>byte</span><span class=p>,</span> <span class=mi>1024</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>			<span class=nx>n</span><span class=p>,</span> <span class=nx>err</span> <span class=o>:=</span> <span class=nx>stdout</span><span class=p>.</span><span class=nf>Read</span><span class=p>(</span><span class=nx>buf</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=k>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=p>&gt;</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>fmt</span><span class=p>.</span><span class=nf>Println</span><span class=p>(</span><span class=nb>string</span><span class=p>(</span><span class=nx>buf</span><span class=p>[:</span><span class=nx>n</span><span class=p>]))</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>n</span> <span class=o>==</span> <span class=mi>0</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=k>break</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>			<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>				<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;read out %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>				<span class=k>return</span>
+</span></span><span class=line><span class=cl>			<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>		<span class=p>}</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=c1>// 写
+</span></span></span><span class=line><span class=cl><span class=c1></span>	<span class=k>go</span> <span class=kd>func</span><span class=p>()</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>stdin</span><span class=p>.</span><span class=nf>Write</span><span class=p>([]</span><span class=nb>byte</span><span class=p>(</span><span class=s>&#34;version\n\n&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>		<span class=nx>stdin</span><span class=p>.</span><span class=nf>Write</span><span class=p>([]</span><span class=nb>byte</span><span class=p>(</span><span class=s>&#34;ciphers -v\n\n&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>		<span class=nx>stdin</span><span class=p>.</span><span class=nf>Write</span><span class=p>([]</span><span class=nb>byte</span><span class=p>(</span><span class=s>&#34;s_client -connect razeencheng.com:443&#34;</span><span class=p>))</span>
+</span></span><span class=line><span class=cl>		<span class=nx>stdin</span><span class=p>.</span><span class=nf>Close</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>		<span class=nx>wg</span><span class=p>.</span><span class=nf>Done</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=p>}()</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>	<span class=nx>wg</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=nx>err</span> <span class=o>:=</span> <span class=nx>cmd</span><span class=p>.</span><span class=nf>Wait</span><span class=p>()</span>
+</span></span><span class=line><span class=cl>	<span class=k>if</span> <span class=nx>err</span> <span class=o>!=</span> <span class=kc>nil</span> <span class=p>{</span>
+</span></span><span class=line><span class=cl>		<span class=nx>log</span><span class=p>.</span><span class=nf>Printf</span><span class=p>(</span><span class=s>&#34;cmd wait %v&#34;</span><span class=p>,</span> <span class=nx>err</span><span class=p>)</span>
+</span></span><span class=line><span class=cl>		<span class=k>return</span>
+</span></span><span class=line><span class=cl>	<span class=p>}</span>
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=p>}</span>
+</span></span></code></pre></div><p>这里，我们就用到了<code>stdin</code>标准输入了。输出如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-shell data-lang=shell><span class=line><span class=cl>Run Test <span class=m>5</span>
+</span></span><span class=line><span class=cl>OpenSSL&gt; LibreSSL 2.6.5
+</span></span><span class=line><span class=cl>OpenSSL&gt; OpenSSL&gt;
+</span></span><span class=line><span class=cl>ECDHE-RSA-AES256-GCM-SHA384 TLSv1.2 <span class=nv>Kx</span><span class=o>=</span>ECDH     <span class=nv>Au</span><span class=o>=</span>RSA  <span class=nv>Enc</span><span class=o>=</span>AESGCM<span class=o>(</span>256<span class=o>)</span> <span class=nv>Mac</span><span class=o>=</span>AEAD
+</span></span><span class=line><span class=cl>ECDHE-ECDSA-AES256-GCM-SHA384 TLSv1.2 <span class=nv>Kx</span><span class=o>=</span>ECDH     <span class=nv>Au</span><span class=o>=</span>ECDSA <span class=nv>Enc</span><span class=o>=</span>AESGCM<span class=o>(</span>256<span class=o>)</span> <span class=nv>Mac</span><span class=o>=</span>AEAD
+</span></span><span class=line><span class=cl>ECDHE-RSA-AES256-SHA384 TLSv1.2 <span class=nv>Kx</span><span class=o>=</span>ECDH     <span class=nv>Au</span><span class=o>=</span>RSA  <span class=nv>Enc</span><span class=o>=</span>AES<span class=o>(</span>256<span class=o>)</span>  <span class=nv>Mac</span><span class=o>=</span>SHA384
+</span></span><span class=line><span class=cl>ECDHE-ECDSA-AES256-SHA384 TLSv1.2 <span class=nv>Kx</span><span class=o>=</span>ECDH     <span class=nv>Au</span><span class=o>=</span>ECDSA <span class=nv>Enc</span><span class=o>=</span>AES<span class=o>(</span>256<span class=o>)</span>  <span class=nv>Mac</span><span class=o>=</span>SHA384
+</span></span><span class=line><span class=cl>ECDHE-RSA-AES256-SHA    SSLv3 <span class=nv>Kx</span><span class=o>=</span>ECDH     <span class=nv>Au</span><span class=o>=</span>RSA  <span class=nv>Enc</span><span class=o>=</span>AES<span class=o>(</span>256<span class=o>)</span>  <span class=nv>Mac</span><span class=o>=</span>SHA1
+</span></span><span class=line><span class=cl>ECDHE-ECDSA-AES256-SHA  SSLv3 <span class=nv>Kx</span><span class=o>=</span>ECDH     <span class=nv>Au</span><span class=o>=</span>ECDSA <span class=nv>Enc</span><span class=o>=</span>AES<span class=o>(</span>256<span class=o>)</span>  <span class=nv>Mac</span><span class=o>=</span>SHA1
+</span></span><span class=line><span class=cl>DHE-RSA-AES256-GCM-SHA384 TLSv1.2 <span class=nv>Kx</span><span class=o>=</span>DH       <span class=nv>Au</span><span class=o>=</span>RSA  <span class=nv>Enc</span><span class=o>=</span>AESGCM<span class=o>(</span>256<span class=o>)</span> <span class=nv>Mac</span><span class=o>=</span>AEAD
+</span></span><span class=line><span class=cl>DHE-RSA-AES256-SHA256   TLSv1.2 <span class=nv>Kx</span><span class=o>=</span>DH       <span class=nv>Au</span><span class=o>=</span>RSA  <span class=nv>Enc</span><span class=o>=</span>AES<span class=o>(</span>256<span class=o>)</span>  <span class=nv>Mac</span><span class=o>=</span>SHA256
+</span></span><span class=line><span class=cl>DES-CBC-SHA             SSLv3 <span class=nv>Kx</span><span class=o>=</span>RSA      <span class=nv>Au</span><span class=o>=</span>RSA  <span class=nv>Enc</span><span class=o>=</span>DES<span class=o>(</span>56<span class=o>)</span>   <span class=nv>Mac</span><span class=o>=</span>SHA1
+</span></span><span class=line><span class=cl>...
+</span></span><span class=line><span class=cl>OpenSSL&gt; OpenSSL&gt;
+</span></span><span class=line><span class=cl>4466583148:error:14004410:SSL routines:CONNECT_CR_SRVR_HELLO:sslv3 alert handshake failure:/BuildRoot/Library/Caches/com.apple.xbs/Sources/libressl/libressl-22.260.1/libressl-2.6/ssl/ssl_pkt.c:1205:SSL alert number <span class=m>40</span>
+</span></span><span class=line><span class=cl>4466583148:error:140040E5:SSL routines:CONNECT_CR_SRVR_HELLO:ssl handshake failure:/BuildRoot/Library/Caches/com.apple.xbs/Sources/libressl/libressl-22.260.1/libressl-2.6/ssl/ssl_pkt.c:585:
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>CONNECTED<span class=o>(</span>00000005<span class=o>)</span>
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>no peer certificate available
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>No client certificate CA names sent
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>SSL handshake has <span class=nb>read</span> <span class=m>7</span> bytes and written <span class=m>0</span> bytes
+</span></span><span class=line><span class=cl>---
+</span></span><span class=line><span class=cl>New, <span class=o>(</span>NONE<span class=o>)</span>, Cipher is <span class=o>(</span>NONE<span class=o>)</span>
+</span></span><span class=line><span class=cl>Secure Renegotiation IS NOT supported
+</span></span><span class=line><span class=cl>Compression: NONE
+</span></span><span class=line><span class=cl>Expansion: NONE
+</span></span><span class=line><span class=cl>No ALPN negotiated
+</span></span><span class=line><span class=cl>SSL-Session:
+</span></span><span class=line><span class=cl>    Protocol  : TLSv1.2
+</span></span><span class=line><span class=cl>    Cipher    : <span class=m>0000</span>
+</span></span><span class=line><span class=cl>    Session-ID:
+</span></span><span class=line><span class=cl>    Session-ID-ctx:
+</span></span><span class=line><span class=cl>    Master-Key:
+</span></span><span class=line><span class=cl>    Start Time: <span class=m>1559815613</span>
+</span></span><span class=line><span class=cl>    Timeout   : <span class=m>7200</span> <span class=o>(</span>sec<span class=o>)</span>
+</span></span><span class=line><span class=cl>    Verify <span class=k>return</span> code: <span class=m>0</span> <span class=o>(</span>ok<span class=o>)</span>
+</span></span><span class=line><span class=cl>---
+</span></span></code></pre></div><p>—END&mdash;</p></div><div class="related-posts thin"><h2>相关推荐</h2><ul><li><a href=/posts/breaking-all-the-rules-using-go-to-call-windows-api/>如何用 Go 调用 Windows API</a></li><li><a href=/posts/oauth2-protocol-details/>Go学习笔记(七) | 理解OAuth 2.0并实现一个客户端</a></li><li><a href=/posts/go-swagger/>Go学习笔记(六) | 使用swaggo自动生成Restful API文档</a></li><li><a href=/posts/go-snippets/>Go学习笔记(五) | 使用代码片段(snippets)提高编码效率</a></li><li><a href=/posts/how-to-use-grpc-in-golang-03/>gRPC在Go中的使用（三）gRPC实现TLS加密通信与流模式</a></li></ul></div><hr class=post-end><footer class=post-info><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7" y2="7"/></svg><span class=tag><a href=https://razeencheng.com/tags/golang>golang</a></span></p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6A2 2 0 004 4v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>2167 字</p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>2019-05-30 21:06 +0000</p></footer></article><aside id=toc class=show-toc><div class=toc-title>目录</div><nav id=TableOfContents><ul><li><ul><li><a href=#关于unix标准输入输出>关于Unix标准输入输出</a></li><li><a href=#osexec>os/exec</a></li><li><a href=#简单执行>简单执行</a></li><li><a href=#分离标准输出与错误输出>分离标准输出与错误输出</a></li><li><a href=#按行读取输出内容>按行读取输出内容</a></li><li><a href=#设置执行超时时间>设置执行超时时间</a></li><li><a href=#持续输入指令交互模式>持续输入指令，交互模式</a></li></ul></li></ul></nav></aside><div class="post-nav thin"><a class=next-post href=https://razeencheng.com/posts/start-use-newifi3/><span class=post-nav-label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>&nbsp;新</span><br><span>Newifi3 实现低成本家庭级科学上网</span></a>
+<a class=prev-post href=https://razeencheng.com/posts/breaking-all-the-rules-using-go-to-call-windows-api/><span class=post-nav-label>旧&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span><br><span>如何用 Go 调用 Windows API</span></a></div><div id=google-ads class=thin><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4450478767591566" crossorigin=anonymous></script>
+<ins class=adsbygoogle style=display:block data-ad-client=ca-pub-4450478767591566 data-ad-slot=8164928618 data-ad-format=auto data-full-width-responsive=true></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({})</script></div><div id=comments class=thin><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//razeen-me.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div></main><footer id=site-footer class="section-inner thin"><p>&copy; 2017 - 2022 <a href=https://razeencheng.com>Razeen</a> &#183; <a href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank rel=noopener>CC BY-NC 4.0</a></p><p>Made with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> &#183; Theme <a href=https://github.com/Track3/hermit target=_blank rel=noopener>Hermit</a> &#183; <a href=https://razeencheng.com/posts/index.xml target=_blank title=rss><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1"/></svg></a></p></footer><script src=https://s.razeen.cn/assets/js/mermaid.min.js></script>
+<script>Array.from(document.getElementsByClassName("language-mermaid")).forEach(e=>{e.parentElement.outerHTML=`<div class="mermaid">${e.innerText}</div>`})</script><script src=https://razeencheng.com/js/main.min.4e6345981f1ff315bbb7afa61eacf413923b536e5a4d5b22f698d96b624d48c4.js integrity="sha256-TmNFmB8f8xW7t6+mHqz0E5I7U25aTVsi9pjZa2JNSMQ=" crossorigin=anonymous></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4BKH11NSEY"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-4BKH11NSEY")</script></body></html>

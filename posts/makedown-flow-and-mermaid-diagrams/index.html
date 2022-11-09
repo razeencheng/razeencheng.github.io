@@ -1,0 +1,347 @@
+<!doctype html><html lang=zh-cn><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=theme-color content="#494f5c"><meta name=msapplication-TileColor content="#494f5c"><meta itemprop=name content="利用 Markdown 画一些流程图、时序图、甘特图等"><meta itemprop=description content="平常用 markdown 简单写点东西，需要一些流程图，时序图，甘特图, makedown 支持的不错。 而 hexo 博客也能很轻松的开启。
+这里记录下，方便查阅使用。"><meta itemprop=datePublished content="2022-06-02T21:50:01+00:00"><meta itemprop=dateModified content="2022-06-02T21:50:01+00:00"><meta itemprop=wordCount content="1694"><meta itemprop=image content="https://razeencheng.com/android-chrome-192x192.png"><meta itemprop=keywords content="hexo,"><meta property="og:title" content="利用 Markdown 画一些流程图、时序图、甘特图等"><meta property="og:description" content="平常用 markdown 简单写点东西，需要一些流程图，时序图，甘特图, makedown 支持的不错。 而 hexo 博客也能很轻松的开启。
+这里记录下，方便查阅使用。"><meta property="og:type" content="article"><meta property="og:url" content="https://razeencheng.com/posts/makedown-flow-and-mermaid-diagrams/"><meta property="og:image" content="https://razeencheng.com/android-chrome-192x192.png"><meta property="article:section" content="posts"><meta property="article:published_time" content="2022-06-02T21:50:01+00:00"><meta property="article:modified_time" content="2022-06-02T21:50:01+00:00"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://razeencheng.com/android-chrome-192x192.png"><meta name=twitter:title content="利用 Markdown 画一些流程图、时序图、甘特图等"><meta name=twitter:description content="平常用 markdown 简单写点东西，需要一些流程图，时序图，甘特图, makedown 支持的不错。 而 hexo 博客也能很轻松的开启。
+这里记录下，方便查阅使用。"><link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png><link rel=icon href=/favicon.ico><link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png><link rel=mask-icon href=/safari-pinned-tab.svg><link rel=manifest crossorigin=use-credentials href=/site.webmanifest><link rel="shortcut icon" href=/favicon.ico><title>利用 Markdown 画一些流程图、时序图、甘特图等</title><link rel=stylesheet href=https://razeencheng.com/css/style.min.a88782436067f84711b02510e9f09bd68bd49c25cd2e03624cd7320fa893b6ea.css integrity="sha256-qIeCQ2Bn+EcRsCUQ6fCb1ovUnCXNLgNiTNcyD6iTtuo=" crossorigin=anonymous></head><body id=page><header id=site-header><div class="hdr-wrapper section-inner"><div class=hdr-left><div class=site-branding><a href=https://razeencheng.com>Razeen`s Blog</a></div><nav class="site-nav hide-in-mobile"><a href=https://razeencheng.com/posts/>文章</a>
+<a href=https://razeencheng.com/tags/>标签</a>
+<a href=https://razeencheng.com/categories/>分类</a>
+<a href=https://razeencheng.com/about/>关于</a></nav></div><div class="hdr-right hdr-icons"><span class="hdr-social hide-in-mobile"><a href=https://twitter.com/razeencheng target=_blank rel="noopener me" title=Twitter><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9.0 01-3.14 1.53 4.48 4.48.0 00-7.86 3v1A10.66 10.66.0 013 4s-4 9 5 13a11.64 11.64.0 01-7 2c9 5 20 0 20-11.5a4.5 4.5.0 00-.08-.83A7.72 7.72.0 0023 3z"/></svg></a><a href=https://github.com/razeencheng target=_blank rel="noopener me" title=Github><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37.0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44.0 0020 4.77 5.07 5.07.0 0019.91 1S18.73.65 16 2.48a13.38 13.38.0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07.0 005 4.77 5.44 5.44.0 003.5 8.55c0 5.42 3.3 6.61 6.44 7A3.37 3.37.0 009 18.13V22"/></svg></a></span><button id=menu-btn class=hdr-btn title=菜单><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button></div></div></header><div id=mobile-menu class="animated fast"><ul><li><a href=https://razeencheng.com/posts/>文章</a></li><li><a href=https://razeencheng.com/tags/>标签</a></li><li><a href=https://razeencheng.com/categories/>分类</a></li><li><a href=https://razeencheng.com/about/>关于</a></li></ul></div><main class="site-main section-inner"><article class=thin><header class=post-header><div class=post-meta><span>Jun 2, 2022</span></div><h1>利用 Markdown 画一些流程图、时序图、甘特图等</h1></header><div class=content><p>平常用 <code>markdown</code> 简单写点东西，需要一些流程图，时序图，甘特图, <code>makedown</code> 支持的不错。 而 <code>hexo</code> 博客也能很轻松的开启。</p><p>这里记录下，方便查阅使用。</p><h2 id=hexo-配置>hexo 配置<a href=#hexo-配置 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h2><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl><span class=c1># 标准流程图依赖</span>
+</span></span><span class=line><span class=cl>npm install --save hexo-filter-flowchart
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 时序图依赖</span>
+</span></span><span class=line><span class=cl>npm install --save hexo-filter-sequence 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 流程图、甘特图等 mermaid 图依赖</span>
+</span></span><span class=line><span class=cl>npm install --save hexo-filter-mermaid-diagrams 
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl><span class=c1># 博客主题可能要开启相关的选项</span>
+</span></span><span class=line><span class=cl>  mermaid:
+</span></span><span class=line><span class=cl>    enable: <span class=nb>true</span>
+</span></span></code></pre></div><h2 id=标准流程图>标准流程图<a href=#标准流程图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h2><h3 id=最简单的>最简单的<a href=#最简单的 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``flow
+</span></span><span class=line><span class=cl>start=&gt;start: 接收到消息
+</span></span><span class=line><span class=cl>info=&gt;operation: 读取信息
+</span></span><span class=line><span class=cl>setCache=&gt;operation: 更新缓存
+</span></span><span class=line><span class=cl>end=&gt;end: 处理结束
+</span></span><span class=line><span class=cl>start-&gt;info-&gt;setCache-&gt;end
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-flow data-lang=flow>start=&gt;start: 接收到消息
+info=&gt;operation: 读取信息
+setCache=&gt;operation: 更新缓存
+end=&gt;end: 处理结束
+start-&gt;info-&gt;setCache-&gt;end
+</code></pre><h3 id=简易四步骤流程图>简易四步骤流程图<a href=#简易四步骤流程图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``flow
+</span></span><span class=line><span class=cl>st=&gt;start: 开始
+</span></span><span class=line><span class=cl>op=&gt;operation: 操作
+</span></span><span class=line><span class=cl>cond=&gt;condition: 判断是否？
+</span></span><span class=line><span class=cl>e=&gt;end: 结束
+</span></span><span class=line><span class=cl>st-&gt;op-&gt;cond
+</span></span><span class=line><span class=cl>cond(yes)-&gt;e
+</span></span><span class=line><span class=cl>cond(no)-&gt;op
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-flow data-lang=flow>st=&gt;start: 开始
+op=&gt;operation: 操作
+cond=&gt;condition: 判断是否？
+e=&gt;end: 结束
+st-&gt;op-&gt;cond
+cond(yes)-&gt;e
+cond(no)-&gt;op
+</code></pre><h3 id=简易五步骤流程图>简易五步骤流程图<a href=#简易五步骤流程图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``flow
+</span></span><span class=line><span class=cl>start=&gt;start: API请求
+</span></span><span class=line><span class=cl>cache=&gt;operation: 读取Redis缓存
+</span></span><span class=line><span class=cl>cached=&gt;condition: 是否有缓存？
+</span></span><span class=line><span class=cl>sendMq=&gt;operation: 发送MQ，后台服务更新缓存
+</span></span><span class=line><span class=cl>info=&gt;operation: 读取信息
+</span></span><span class=line><span class=cl>setCache=&gt;operation: 保存缓存
+</span></span><span class=line><span class=cl>end=&gt;end: 返回信息
+</span></span><span class=line><span class=cl>start-&gt;cache-&gt;cached
+</span></span><span class=line><span class=cl>cached(yes)-&gt;sendMq
+</span></span><span class=line><span class=cl>cached(no)-&gt;info
+</span></span><span class=line><span class=cl>info-&gt;setCache
+</span></span><span class=line><span class=cl>setCache-&gt;end
+</span></span><span class=line><span class=cl>sendMq-&gt;end
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-flow data-lang=flow>start=&gt;start: API请求
+cache=&gt;operation: 读取Redis缓存
+cached=&gt;condition: 是否有缓存？
+sendMq=&gt;operation: 发送MQ，后台服务更新缓存
+info=&gt;operation: 读取信息
+setCache=&gt;operation: 保存缓存
+end=&gt;end: 返回信息
+start-&gt;cache-&gt;cached
+cached(yes)-&gt;sendMq
+cached(no)-&gt;info
+info-&gt;setCache
+setCache-&gt;end
+sendMq-&gt;end
+</code></pre><h3 id=复杂三支线流程图>复杂三支线流程图<a href=#复杂三支线流程图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``flow
+</span></span><span class=line><span class=cl>st=&gt;start: Start|past:&gt;http://www.google.com[blank]
+</span></span><span class=line><span class=cl>e=&gt;end: End:&gt;http://www.google.com
+</span></span><span class=line><span class=cl>op1=&gt;operation: get_hotel_ids|past
+</span></span><span class=line><span class=cl>op2=&gt;operation: get_proxy|current
+</span></span><span class=line><span class=cl>sub1=&gt;subroutine: get_proxy|current
+</span></span><span class=line><span class=cl>op3=&gt;operation: save_comment|current
+</span></span><span class=line><span class=cl>op4=&gt;operation: set_sentiment|current
+</span></span><span class=line><span class=cl>op5=&gt;operation: set_record|current
+</span></span><span class=line><span class=cl>cond1=&gt;condition: ids_remain空?
+</span></span><span class=line><span class=cl>cond2=&gt;condition: proxy_list空?
+</span></span><span class=line><span class=cl>cond3=&gt;condition: ids_got空?
+</span></span><span class=line><span class=cl>cond4=&gt;condition: 爬取成功??
+</span></span><span class=line><span class=cl>cond5=&gt;condition: ids_remain空?
+</span></span><span class=line><span class=cl>io1=&gt;inputoutput: ids-remain
+</span></span><span class=line><span class=cl>io2=&gt;inputoutput: proxy_list
+</span></span><span class=line><span class=cl>io3=&gt;inputoutput: ids-got
+</span></span><span class=line><span class=cl>st-&gt;op1(right)-&gt;io1-&gt;cond1
+</span></span><span class=line><span class=cl>cond1(yes)-&gt;sub1-&gt;io2-&gt;cond2
+</span></span><span class=line><span class=cl>cond2(no)-&gt;op3
+</span></span><span class=line><span class=cl>cond2(yes)-&gt;sub1
+</span></span><span class=line><span class=cl>cond1(no)-&gt;op3-&gt;cond4
+</span></span><span class=line><span class=cl>cond4(yes)-&gt;io3-&gt;cond3
+</span></span><span class=line><span class=cl>cond4(no)-&gt;io1
+</span></span><span class=line><span class=cl>cond3(no)-&gt;op4
+</span></span><span class=line><span class=cl>cond3(yes, right)-&gt;cond5
+</span></span><span class=line><span class=cl>cond5(yes)-&gt;op5
+</span></span><span class=line><span class=cl>cond5(no)-&gt;cond3
+</span></span><span class=line><span class=cl>op5-&gt;e
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-flow data-lang=flow>st=&gt;start: Start|past:&gt;http://www.google.com[blank]
+e=&gt;end: End:&gt;http://www.google.com
+op1=&gt;operation: get_hotel_ids|past
+op2=&gt;operation: get_proxy|current
+sub1=&gt;subroutine: get_proxy|current
+op3=&gt;operation: save_comment|current
+op4=&gt;operation: set_sentiment|current
+op5=&gt;operation: set_record|current
+cond1=&gt;condition: ids_remain空?
+cond2=&gt;condition: proxy_list空?
+cond3=&gt;condition: ids_got空?
+cond4=&gt;condition: 爬取成功??
+cond5=&gt;condition: ids_remain空?
+io1=&gt;inputoutput: ids-remain
+io2=&gt;inputoutput: proxy_list
+io3=&gt;inputoutput: ids-got
+st-&gt;op1(right)-&gt;io1-&gt;cond1
+cond1(yes)-&gt;sub1-&gt;io2-&gt;cond2
+cond2(no)-&gt;op3
+cond2(yes)-&gt;sub1
+cond1(no)-&gt;op3-&gt;cond4
+cond4(yes)-&gt;io3-&gt;cond3
+cond4(no)-&gt;io1
+cond3(no)-&gt;op4
+cond3(yes, right)-&gt;cond5
+cond5(yes)-&gt;op5
+cond5(no)-&gt;cond3
+op5-&gt;e
+</code></pre><h2 id=时序图>时序图<a href=#时序图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h2><h3 id=标准时序图>标准时序图<a href=#标准时序图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``sequence
+</span></span><span class=line><span class=cl>Title:时序图示例
+</span></span><span class=line><span class=cl>客户端-&gt;服务端: 我想找你拿下数据 SYN
+</span></span><span class=line><span class=cl>服务端--&gt;客户端: 我收到你的请求啦 ACK+SYN
+</span></span><span class=line><span class=cl>客户端-&gt;&gt;服务端: 我收到你的确认啦，我们开始通信吧 ACK
+</span></span><span class=line><span class=cl>Note right of 服务端: 我是一个服务端
+</span></span><span class=line><span class=cl>Note left of 客户端: 我是一个客户端
+</span></span><span class=line><span class=cl>Note over 服务端,客户端: TCP 三次握手
+</span></span><span class=line><span class=cl>participant 观察者
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-sequence data-lang=sequence>Title:时序图示例
+客户端-&gt;服务端: 我想找你拿下数据 SYN
+服务端--&gt;客户端: 我收到你的请求啦 ACK+SYN
+客户端-&gt;&gt;服务端: 我收到你的确认啦，我们开始通信吧 ACK
+Note right of 服务端: 我是一个服务端
+Note left of 客户端: 我是一个客户端
+Note over 服务端,客户端: TCP 三次握手
+participant 观察者
+</code></pre><h3 id=uml时序图>UML时序图<a href=#uml时序图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``sequence
+</span></span><span class=line><span class=cl>客户端-&gt;打印机: 打印请求(id)
+</span></span><span class=line><span class=cl>打印机-&gt;数据库:请求数据(id)
+</span></span><span class=line><span class=cl>Note right of 数据库: 执行SQL获取数据
+</span></span><span class=line><span class=cl>数据库--&gt;打印机:返回数据信息
+</span></span><span class=line><span class=cl>Note right of 打印机:使用数据打印
+</span></span><span class=line><span class=cl>打印机--&gt;&gt;客户端:返回打印结果
+</span></span><span class=line><span class=cl>客户端-&gt;客户端:等待提取结果
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-sequence data-lang=sequence>客户端-&gt;打印机: 打印请求(id)
+打印机-&gt;数据库:请求数据(id)
+Note right of 数据库: 执行SQL获取数据
+数据库--&gt;打印机:返回数据信息
+Note right of 打印机:使用数据打印
+打印机--&gt;&gt;客户端:返回打印结果
+客户端-&gt;客户端:等待提取结果
+</code></pre><h2 id=mermaid-图>mermaid 图<a href=#mermaid-图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h2><h3 id=流程图>流程图<a href=#流程图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``mermaid
+</span></span><span class=line><span class=cl>graph TD;
+</span></span><span class=line><span class=cl>    A--&gt;B;
+</span></span><span class=line><span class=cl>    A--&gt;C;
+</span></span><span class=line><span class=cl>    B--&gt;D;
+</span></span><span class=line><span class=cl>    C--&gt;D;
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>graph TD;
+    A--&gt;B;
+    A--&gt;C;
+    B--&gt;D;
+    C--&gt;D;
+</code></pre><h3 id=时序图-1>时序图<a href=#时序图-1 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``mermaid
+</span></span><span class=line><span class=cl>sequenceDiagram
+</span></span><span class=line><span class=cl>    participant Alice
+</span></span><span class=line><span class=cl>    participant Bob
+</span></span><span class=line><span class=cl>    Alice-&gt;&gt;John: Hello John, how are you?
+</span></span><span class=line><span class=cl>    loop Healthcheck
+</span></span><span class=line><span class=cl>        John-&gt;&gt;John: Fight against hypochondria
+</span></span><span class=line><span class=cl>    end
+</span></span><span class=line><span class=cl>    Note right of John: Rational thoughts &lt;br/&gt;prevail...
+</span></span><span class=line><span class=cl>    John--&gt;&gt;Alice: Great!
+</span></span><span class=line><span class=cl>    John-&gt;&gt;Bob: How about you?
+</span></span><span class=line><span class=cl>    Bob--&gt;&gt;John: Jolly good!
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>sequenceDiagram
+    participant Alice
+    participant Bob
+    Alice-&gt;&gt;John: Hello John, how are you?
+    loop Healthcheck
+        John-&gt;&gt;John: Fight against hypochondria
+    end
+    Note right of John: Rational thoughts &lt;br/&gt;prevail...
+    John--&gt;&gt;Alice: Great!
+    John-&gt;&gt;Bob: How about you?
+    Bob--&gt;&gt;John: Jolly good!
+</code></pre><h3 id=甘特图>甘特图<a href=#甘特图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``mermaid
+</span></span><span class=line><span class=cl>gantt
+</span></span><span class=line><span class=cl>dateFormat  YYYY-MM-DD
+</span></span><span class=line><span class=cl>title Adding GANTT diagram to mermaid
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>section A section
+</span></span><span class=line><span class=cl>Completed task            :done,    des1, 2014-01-06,2014-01-08
+</span></span><span class=line><span class=cl>Active task               :active,  des2, 2014-01-09, 3d
+</span></span><span class=line><span class=cl>Future task               :         des3, after des2, 5d
+</span></span><span class=line><span class=cl>Future task2               :         des4, after des3, 5d
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>section B section
+</span></span><span class=line><span class=cl>Completed task            :done,    des1, 2014-01-06,2014-01-08
+</span></span><span class=line><span class=cl>Active task               :active,  des2, 2014-01-09, 2d
+</span></span><span class=line><span class=cl>Future task               :         des3, after des2, 3d
+</span></span><span class=line><span class=cl>Future task2               :         des4, after des3, 6d
+</span></span><span class=line><span class=cl>
+</span></span><span class=line><span class=cl>section C section
+</span></span><span class=line><span class=cl>Completed task            :done,    des1, 2014-01-06,2014-01-08
+</span></span><span class=line><span class=cl>Active task               :active,  des2, 2014-01-09, 1d
+</span></span><span class=line><span class=cl>Future task               :         des3, after des2, 6d
+</span></span><span class=line><span class=cl>Future task2               :         des4, after des3, 2d
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>gantt
+dateFormat  YYYY-MM-DD
+title Adding GANTT diagram to mermaid
+
+section A section
+Completed task            :done,    des1, 2014-01-06,2014-01-08
+Active task               :active,  des2, 2014-01-09, 3d
+Future task               :         des3, after des2, 5d
+Future task2               :         des4, after des3, 5d
+
+section B section
+Completed task            :done,    des1, 2014-01-06,2014-01-08
+Active task               :active,  des2, 2014-01-09, 2d
+Future task               :         des3, after des2, 3d
+Future task2               :         des4, after des3, 6d
+
+section C section
+Completed task            :done,    des1, 2014-01-06,2014-01-08
+Active task               :active,  des2, 2014-01-09, 1d
+Future task               :         des3, after des2, 6d
+Future task2               :         des4, after des3, 2d
+</code></pre><h3 id=类图----实验性的>类图 - ❗️ 实验性的<a href=#类图----实验性的 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``mermaid
+</span></span><span class=line><span class=cl>classDiagram
+</span></span><span class=line><span class=cl>Class01 &lt;|-- AveryLongClass : Cool
+</span></span><span class=line><span class=cl>Class03 *-- Class04
+</span></span><span class=line><span class=cl>Class05 o-- Class06
+</span></span><span class=line><span class=cl>Class07 .. Class08
+</span></span><span class=line><span class=cl>Class09 --&gt; C2 : Where am i?
+</span></span><span class=line><span class=cl>Class09 --* C3
+</span></span><span class=line><span class=cl>Class09 --|&gt; Class07
+</span></span><span class=line><span class=cl>Class07 : equals()
+</span></span><span class=line><span class=cl>Class07 : Object[] elementData
+</span></span><span class=line><span class=cl>Class01 : size()
+</span></span><span class=line><span class=cl>Class01 : int chimp
+</span></span><span class=line><span class=cl>Class01 : int gorilla
+</span></span><span class=line><span class=cl>Class08 &lt;--&gt; C2: Cool label
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>classDiagram
+Class01 &lt;|-- AveryLongClass : Cool
+Class03 *-- Class04
+Class05 o-- Class06
+Class07 .. Class08
+Class09 --&gt; C2 : Where am i?
+Class09 --* C3
+Class09 --|&gt; Class07
+Class07 : equals()
+Class07 : Object[] elementData
+Class01 : size()
+Class01 : int chimp
+Class01 : int gorilla
+Class08 &lt;--&gt; C2: Cool label
+</code></pre><h3 id=git-流程----实验性的>git 流程 - ❗️ 实验性的<a href=#git-流程----实验性的 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``mermaid
+</span></span><span class=line><span class=cl>gitGraph:
+</span></span><span class=line><span class=cl>options
+</span></span><span class=line><span class=cl>{
+</span></span><span class=line><span class=cl>    &#34;nodeSpacing&#34;: 150,
+</span></span><span class=line><span class=cl>    &#34;nodeRadius&#34;: 10
+</span></span><span class=line><span class=cl>}
+</span></span><span class=line><span class=cl>end
+</span></span><span class=line><span class=cl>commit
+</span></span><span class=line><span class=cl>branch newbranch
+</span></span><span class=line><span class=cl>checkout newbranch
+</span></span><span class=line><span class=cl>commit
+</span></span><span class=line><span class=cl>commit
+</span></span><span class=line><span class=cl>checkout master
+</span></span><span class=line><span class=cl>commit
+</span></span><span class=line><span class=cl>commit
+</span></span><span class=line><span class=cl>merge newbranch
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>gitGraph:
+options
+{
+    &#34;nodeSpacing&#34;: 150,
+    &#34;nodeRadius&#34;: 10
+}
+end
+commit
+branch newbranch
+checkout newbranch
+commit
+commit
+checkout master
+commit
+commit
+merge newbranch
+</code></pre><h3 id=其他图>其他图<a href=#其他图 class=anchor aria-hidden=true><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 015 5 5 5 0 01-5 5h-3m-6 0H6a5 5 0 01-5-5 5 5 0 015-5h3"/><line x1="8" y1="12" x2="16" y2="12"/></svg></a></h3><p><code>mermaid js</code> 支持画的图形远不止文中提交，还可以画饼图, 用户旅行图等等，参考 <a href="https://mermaid-js.github.io/mermaid/#/?id=about-mermaid">About Mermaid</a> 。</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``mermaid
+</span></span><span class=line><span class=cl>journey
+</span></span><span class=line><span class=cl>    title My working day
+</span></span><span class=line><span class=cl>    section Go to work
+</span></span><span class=line><span class=cl>      Make tea: 5: Me
+</span></span><span class=line><span class=cl>      Go upstairs: 3: Me
+</span></span><span class=line><span class=cl>      Do work: 1: Me, Cat
+</span></span><span class=line><span class=cl>    section Go home
+</span></span><span class=line><span class=cl>      Go downstairs: 5: Me
+</span></span><span class=line><span class=cl>      Sit down: 5: Me
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>journey
+    title My working day
+    section Go to work
+      Make tea: 5: Me
+      Go upstairs: 3: Me
+      Do work: 1: Me, Cat
+    section Go home
+      Go downstairs: 5: Me
+      Sit down: 5: Me
+</code></pre><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>``mermaid
+</span></span><span class=line><span class=cl>pie title Pets adopted by volunteers
+</span></span><span class=line><span class=cl>    &#34;Dogs&#34; : 386
+</span></span><span class=line><span class=cl>    &#34;Cats&#34; : 85
+</span></span><span class=line><span class=cl>    &#34;Rats&#34; : 15
+</span></span><span class=line><span class=cl>``
+</span></span></code></pre></div><pre tabindex=0><code class=language-mermaid data-lang=mermaid>pie title Pets adopted by volunteers
+    &#34;Dogs&#34; : 386
+    &#34;Cats&#34; : 85
+    &#34;Rats&#34; : 15
+</code></pre><p><strong>参考文档</strong></p><ol><li><p><a href="https://mermaid-js.github.io/mermaid/#/?id=about-mermaid">About Mermaid</a></p></li><li><p><a href=https://code.z01.com/doc/mdflow.html>MarkDown流程图全指导</a></p></li></ol></div><div class="related-posts thin"><h2>相关推荐</h2><ul><li><a href=/posts/blog-migration-hexo-next/>我又又又把博客迁移了</a></li><li><a href=/posts/daily-hexo-auto-refresh/>云服务器搭建 hexo 博客，git hooks自动更新</a></li></ul></div><hr class=post-end><footer class=post-info><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83.0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7" y2="7"/></svg><span class=tag><a href=https://razeencheng.com/tags/hexo>hexo</a></span></p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6A2 2 0 004 4v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>1694 字</p><p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>2022-06-02 21:50 +0000</p></footer></article><aside id=toc class=show-toc><div class=toc-title>目录</div><nav id=TableOfContents><ul><li><a href=#hexo-配置>hexo 配置</a></li><li><a href=#标准流程图>标准流程图</a><ul><li><a href=#最简单的>最简单的</a></li><li><a href=#简易四步骤流程图>简易四步骤流程图</a></li><li><a href=#简易五步骤流程图>简易五步骤流程图</a></li><li><a href=#复杂三支线流程图>复杂三支线流程图</a></li></ul></li><li><a href=#时序图>时序图</a><ul><li><a href=#标准时序图>标准时序图</a></li><li><a href=#uml时序图>UML时序图</a></li></ul></li><li><a href=#mermaid-图>mermaid 图</a><ul><li><a href=#流程图>流程图</a></li><li><a href=#时序图-1>时序图</a></li><li><a href=#甘特图>甘特图</a></li><li><a href=#类图----实验性的>类图 - ❗️ 实验性的</a></li><li><a href=#git-流程----实验性的>git 流程 - ❗️ 实验性的</a></li><li><a href=#其他图>其他图</a></li></ul></li></ul></nav></aside><div class="post-nav thin"><a class=next-post href=https://razeencheng.com/posts/newifi3-d2-with-openwrt/><span class=post-nav-label><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>&nbsp;新</span><br><span>Newifi3 刷入 OpenWrt 固件 v21.02</span></a>
+<a class=prev-post href=https://razeencheng.com/posts/homelib-008-gitlab-and-registry/><span class=post-nav-label>旧&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span><br><span>Homelib(8): 搭建自用 Gitlab 与 Docker 仓库</span></a></div><div id=google-ads class=thin><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4450478767591566" crossorigin=anonymous></script>
+<ins class=adsbygoogle style=display:block data-ad-client=ca-pub-4450478767591566 data-ad-slot=8164928618 data-ad-format=auto data-full-width-responsive=true></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({})</script></div><div id=comments class=thin><div id=disqus_thread></div><script type=application/javascript>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//razeen-me.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div></main><footer id=site-footer class="section-inner thin"><p>&copy; 2017 - 2022 <a href=https://razeencheng.com>Razeen</a> &#183; <a href=https://creativecommons.org/licenses/by-nc/4.0/ target=_blank rel=noopener>CC BY-NC 4.0</a></p><p>Made with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a> &#183; Theme <a href=https://github.com/Track3/hermit target=_blank rel=noopener>Hermit</a> &#183; <a href=https://razeencheng.com/posts/index.xml target=_blank title=rss><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 019 9"/><path d="M4 4a16 16 0 0116 16"/><circle cx="5" cy="19" r="1"/></svg></a></p></footer><script src=https://s.razeen.cn/assets/js/mermaid.min.js></script>
+<script>Array.from(document.getElementsByClassName("language-mermaid")).forEach(e=>{e.parentElement.outerHTML=`<div class="mermaid">${e.innerText}</div>`})</script><script src=https://razeencheng.com/js/main.min.4e6345981f1ff315bbb7afa61eacf413923b536e5a4d5b22f698d96b624d48c4.js integrity="sha256-TmNFmB8f8xW7t6+mHqz0E5I7U25aTVsi9pjZa2JNSMQ=" crossorigin=anonymous></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4BKH11NSEY"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date),gtag("config","G-4BKH11NSEY")</script></body></html>
